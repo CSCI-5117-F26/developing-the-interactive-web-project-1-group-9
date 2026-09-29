@@ -13,6 +13,7 @@ CSCI 5117, Fall 2026, [assignment description](https://canvas.umn.edu/courses/57
 * First Last, x500@umn.edu
 * Adam Meziou, mezio004@umn.edu
 * Ali Imihy, imihy001@umn.edu
+* Gideon Okoroafor, okoro062@umn.edu
 
 
 ## Key Features
