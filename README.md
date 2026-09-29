@@ -4,14 +4,15 @@ CSCI 5117, Fall 2026, [assignment description](https://canvas.umn.edu/courses/57
 
 ## App Info:
 
-* Team Name: TODO
-* App Name: TODO
+* Team Name: The Chefs
+* App Name: Sunshine
 * App Link: <https://TODO.com/>
 
 ### Students
 
 * First Last, x500@umn.edu
 * Adam Meziou, mezio004@umn.edu
+* Ali Imihy, imihy001@umn.edu
 
 
 ## Key Features
