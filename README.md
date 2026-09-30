@@ -38,6 +38,17 @@ along with a very brief caption:**
 
 ![](https://media.giphy.com/media/o0vwzuFwCGAFO/giphy.gif)
 
+The following screenshot depicts 4 mock up images of different pages on our planned web app.
+
+Top Left - Main Page 
+
+Top Right - Profile Page 
+
+Bottom Left - Writing and Posting a "tweet" Page
+
+Bottom Right - Viewing a Specific Post Page
+
+![Alt text](/Project1-Mockup.jpg)
 
 ## Mock-up 
 
