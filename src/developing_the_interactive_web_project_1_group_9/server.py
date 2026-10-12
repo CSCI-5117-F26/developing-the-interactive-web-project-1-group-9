@@ -27,11 +27,6 @@ def login():
     return render_template("login.html")
 
 
-@app.route("/signup")
-def signup():
-    return render_template("signup.html")
-
-
 @app.route("/feed")
 def feed():
     return render_template("feed.html")

@@ -69,3 +69,5 @@ relied on external code, expertise, or anything else, please disclose that
 here:**
 
 ...
+## Credits
+*(https://purecss.io) licensed under the [Yahoo BSD License](https://github.com). Copyright (c) 2013, Yahoo! Inc.
