@@ -40,14 +40,6 @@ along with a very brief caption:**
 
 The following screenshot depicts 4 mock up images of different pages on our planned web app.
 
-Top Left - Main Page 
-
-Top Right - Profile Page 
-
-Bottom Left - Writing and Posting a "tweet" Page
-
-Bottom Right - Viewing a Specific Post Page
-
 ![Alt text](/screenshots/mockup_mainfeed.png)
 ![Alt text](/screenshots/mockup_profile.png)
 ![Alt text](/screenshots/mockup_login.png)
