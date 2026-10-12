@@ -48,7 +48,10 @@ Bottom Left - Writing and Posting a "tweet" Page
 
 Bottom Right - Viewing a Specific Post Page
 
-![Alt text](/Project1-Mockup.jpg)
+![Alt text](/screenshots/mockup_mainfeed.png)
+![Alt text](/screenshots/mockup_profile.png)
+![Alt text](/screenshots/mockup_login.png)
+![Alt text](/screenshots/mockup_postscreen.png)
 
 ## Mock-up 
 
