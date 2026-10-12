@@ -6,7 +6,6 @@ app = Flask(__name__)
 
 
 
-# installed pythonenv to work
 # url =  os.environ["DATABASE_URL"]
 
 # schema = """
@@ -31,3 +30,8 @@ def login():
 @app.route("/signup")
 def signup():
     return render_template("signup.html")
+
+
+@app.route("/feed")
+def feed():
+    return render_template("feed.html")
