@@ -71,6 +71,6 @@ async def logout():
     return redirect(logout_url)
 
 @app.route("/feed")
-def feed():
+async def feed():
     user = await auth0.get_user(g.store_options)
     return render_template("feed.html", user=user)
