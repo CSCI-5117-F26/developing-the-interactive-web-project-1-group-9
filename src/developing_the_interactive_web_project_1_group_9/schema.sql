@@ -1,11 +1,10 @@
+
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    user_password TEXT NOT NULL, -- password NOT going to be stored like this, temporary thing
+    user_password TEXT NOT NULL,
     bio TEXT,
-    pfp_id INTEGER REFERENCES pfps(id),
-    banner_id INTEGER REFERENCES banners(id),
     is_admin BOOLEAN DEFAULT FALSE NOT NULL,
     user_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -75,16 +74,16 @@ CREATE TABLE post_reports (
     report_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE pfps ( -- images need id, connected user, name (maybe?), and bytea binary
+CREATE TABLE pfps (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     file_name TEXT NOT NULL,
     image_data BYTEA NOT NULL
 );
 
 CREATE TABLE banners (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     file_name TEXT NOT NULL,
     image_data BYTEA NOT NULL 
 );
