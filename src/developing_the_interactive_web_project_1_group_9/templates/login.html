@@ -1,0 +1,99 @@
+{% extends "template.html" %}
+
+{% block body %}
+<body>
+
+
+
+    <div id="layout" class="pure-g">
+        <div class="sidebar pure-u-1 pure-u-md-1-4">
+            <div class="header">
+                <h1 class="brand-title">Sunshine!</h1>
+                <h2 class="brand-tagline">Adding one smile at a time! </h2>
+
+            </div>
+        </div>
+
+        <div class="content pure-u-1 pure-u-md-1-2">
+            <div>
+                <!-- A wrapper for all the blog posts -->
+                <div class="posts">
+                    <h1 class="content-subhead">Do you have an account? Login!</h1>
+
+                    <!-- A single blog post -->
+                    <section class="post">
+
+
+                        <h1 class="post-title">Login</h1>
+
+                        <p class="post-meta">
+                            Experience the<a class="post-category post-category-design" href="#">joy</a> and <a
+                                class="post-category post-category-pure" href="#">happiness</a> Today!
+                        </p>
+                        </header>
+
+                        <div class="post-description">
+                            <p>
+                                <label for="username">Username</label>
+                                <input id="username" name="username" type="text" />
+                                <br>
+                                <label for="password">Password</label>
+                                <input id="password" name="password" type="text" />
+                                <button>Login</button>
+                                <button>Continue as Guest</button>
+                            </p>
+
+                        </div>
+                    </section>
+                </div>
+
+                <div class="posts">
+
+                    <section class="post">
+                        <header class="post-header">
+                            <img width="48" height="48" alt="Reid Burke&#x27;s avatar" class="post-avatar"
+                                src="/img/common/reid-avatar.png">
+
+                            <h2 class="post-title">Trending Posts</h2>
+
+                            <p class="post-meta">
+                                By <a class="post-author" href="#">Reid Burke</a> under <a class="post-category"
+                                    href="#">Enjoy</a> Monday, Oct 21st 9:00am
+                            </p>
+                        </header>
+
+                        <div class="post-description">
+                            <div class="post-images pure-g">
+                                <div class="pure-u-1 pure-u-md-1-2">
+                                    <a href="http://www.flickr.com/photos/uberlife/8915936174/">
+                                        <img alt="Photo of someone working poolside at a resort"
+                                            class="pure-img-responsive"
+                                            src="http://farm8.staticflickr.com/7448/8915936174_8d54ec76c6.jpg">
+                                    </a>
+
+                                    <div class="post-image-meta">
+                                        <h3>Belgium</h3>
+                                    </div>
+                                </div>
+
+                                <div class="pure-u-1 pure-u-md-1-2">
+                                    <a href="http://www.flickr.com/photos/uberlife/8907351301/">
+                                        <img alt="Photo of the sunset on the beach" class="pure-img-responsive"
+                                            src="http://farm8.staticflickr.com/7382/8907351301_bd7460cffb.jpg">
+                                    </a>
+
+                                    <div class="post-image-meta">
+                                        <h3>Miami</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+{% endblock %}
