@@ -1,8 +1,14 @@
 import os
 from auth0_server_python.auth_server.server_client import ServerClient
+from auth0_server_python.store import StateStore
 from dotenv import load_dotenv
+import asyncpg
+import json
+import secrets
+from typing import Dict, Any, Optional
 
 load_dotenv()
+db_url = os.getenv('DB_URL')
 
 # Simple in-memory storage for development
 # For production, use Redis, PostgreSQL, or other persistent storage
@@ -38,9 +44,191 @@ class MemoryTransactionStore:
     async def delete(self, key, options=None):
         self._data.pop(key, None)
 
+class DBStateStore(StateStore):
+    def __init__(self, secret):
+        super().__init__({"secret": secret})
+        pass
+    
+    async def set(self, key, value, options = None):
+        conn = psycopg.connect(db_url)
+        cursor = conn.cursor()
+        cursor.execute(
+                """
+                INSERT INTO auth_sessions (session_id, session_data)
+                VALUES ($1, $2)
+                ON CONFLICT (session_id) DO UPDATE SET session_data = EXCLUDED.session_data
+                """,
+                key, json.dumps(value)
+            )
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+    async def get(self, key, value, options= None):
+        conn = asyncpg.connect(db_url)
+        cursor = conn.cursor()
+        row = await conn.fetchrow(
+                "SELECT data FROM auth_sessions WHERE session_id = $1", key
+            )
+        await conn.commit()
+        await cursor.close()
+        await conn.close()
+        if row and row["data"]:
+            return json.loads(row["data"])
+        return None
+
+    async def delete(self, key, options=None):
+        pass
+
+# The Docs are HORRIBLE, so I'll explain how this works
+# The identifier passed in will be the name of the cookie, not the field it's querying
+# The job of set is to store the data as a single encrypted blob, and store it's own generated key in a cookie
+# Get's job is to get the WHOLE json and pass it back to auth0 to do what it needs to, using the key so you
+# give it the correct user's auth block. In other words, auth0 is not asking you to rummage through the giant
+# state object itself, it want the whole state. It's just your job to make sure you're passing the current
+# user's state via cookies.
+class PostgresStateStore(StateStore):
+    """
+    A stateful store that uses Postgres to store session data.
+    The cookie holds just a session_id; the rest of the data is in Postgres.
+    """
+
+    def __init__(self, secret: str, dsn: str, cookie_name: str = "_a0_session"):
+        super().__init__({"secret": secret})
+        self.dsn = dsn  # "postgresql://user:password@host:port/dbname"
+        self.cookie_name = cookie_name
+        self.pool = None  # We'll initialize a connection pool later.
+
+    async def init_pool(self):
+        """Create a connection pool. Call this once on startup."""
+        if not self.pool:
+            self.pool = await asyncpg.create_pool(dsn=self.dsn)
+
+    async def set(
+        self, 
+        identifier: str, 
+        state: Dict[str, Any], 
+        options: Optional[Dict[str, Any]] = None
+    ) -> None:
+        if not options or "response" not in options:
+            raise ValueError("Response object is required for setting a cookie in PostgresStateStore.")
+        
+        response = options["response"]
+        session_id = secrets.token_urlsafe(10)
+
+        print("Set Called:")
+        print("Identifier %s", identifier)
+        print("State:")
+        print(state)
+
+        await self.init_pool()
+        async with self.pool.acquire() as conn:
+            # Optionally encrypt `state`:
+            # encrypted_data = self.encrypt(session_id, state)
+            # For simplicity, store as JSON
+            data_json = json.dumps(state, default=str)
+
+            # Insert or update the session
+            await conn.execute(
+                """
+                INSERT INTO auth_sessions(session_id, session_data)
+                VALUES($1, $2)
+                ON CONFLICT (session_id) DO UPDATE SET session_data=excluded.session_data
+                """,
+                session_id,
+                data_json
+            )
+
+        # Set the cookie containing session_id
+        response.set_cookie(
+            key=identifier,
+            value=session_id,
+            httponly=True,
+            samesite="Lax",
+            max_age=86400,  # 1 day example
+            path="/"
+        )
+        response.set_cookie(
+            key=identifier,
+            value=session_id,
+            httponly=True,
+            samesite="Lax",
+            max_age=86400,  # 1 day example
+            path="/"
+        )
+
+    async def get(
+        self, 
+        identifier: str, 
+        options: Optional[Dict[str, Any]] = None
+    ) -> Optional[Dict[str, Any]]:
+        if not options or "request" not in options:
+            raise ValueError("Request object is required to read cookies in PostgresStateStore.")
+
+        print("Get Called:")
+        print("Identifier %s", identifier)
+
+        request = options["request"]
+        session_id = request.cookies.get(identifier)
+        print("Retrived session id: %s", session_id)
+        if not session_id:
+            return None
+
+        await self.init_pool()
+        async with self.pool.acquire() as conn:
+            row = await conn.fetchrow(
+                "SELECT session_data FROM auth_sessions WHERE session_id = $1",
+                session_id
+            )
+            if not row:
+                return None
+            # If you used encryption, do self.decrypt(...)
+            return json.loads(row["session_data"])
+
+    async def delete(
+        self, 
+        identifier: str, 
+        options: Optional[Dict[str, Any]] = None
+    ) -> None:
+        if not options or "response" not in options:
+            raise ValueError("Response object is required to clear cookies in PostgresStateStore.")
+        
+        response = options["response"]
+        request = options["request"]
+        session_id = request.cookies.get(self.cookie_name)
+
+        await self.init_pool()
+        if session_id:
+            async with self.pool.acquire() as conn:
+                await conn.execute("DELETE FROM auth_sessions WHERE session_id = $1", session_id)
+
+        response.delete_cookie(self.cookie_name)
+
+    async def delete_by_logout_token(
+        self, 
+        claims: Dict[str, Any], 
+        options: Optional[Dict[str, Any]] = None
+    ) -> None:
+        """
+        Backchannel logout: find sessions that match sub/sid and remove them.
+        This might require storing sub/sid in the DB row for quick lookups.
+        """
+        async with self.pool.acquire() as conn:
+            # If you store 'sid' or 'user.sub' in a separate column, you can do:
+            await conn.execute(
+                """
+                DELETE FROM auth_sessions
+                WHERE (session_data->'internal'->>'sid') = $1
+                  AND (session_data->'user'->>'sub') = $2
+                """,
+                claims.get("sid"),
+                claims.get("sub")
+            )
+
+
 # Initialize stores
-state_store = MemoryStateStore()
-transaction_store = MemoryTransactionStore()
+state_store = PostgresStateStore(os.getenv('AUTH0_SECRET'), db_url)
+transaction_store = MemoryTransactionStore() # Will be replaced by postgres transaction store which will more or less be copy-paste of statestore
 
 # Initialize the Auth0 ServerClient
 auth0 = ServerClient(
