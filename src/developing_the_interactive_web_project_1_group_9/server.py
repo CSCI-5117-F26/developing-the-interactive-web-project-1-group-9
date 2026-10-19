@@ -23,6 +23,7 @@ app = Flask(__name__)
 
 
 @app.route("/")
+@app.route("/signin")
 def login():
     return render_template("login.html")
 
@@ -30,7 +31,10 @@ def login():
 def signup():
     return render_template("signup.html")
 
+@app.route("/feeds")
+def feeds():
+    return render_template("feeds.html")
 
-@app.route("/feed")
+@app.route("/profile")
 def feed():
-    return render_template("feed.html")
+    return render_template("profile.html")
