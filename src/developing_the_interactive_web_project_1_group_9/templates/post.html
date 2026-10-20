@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <article class="card post">
+    
+    <!-- Author -->
+    <div class="post-header">
+        <div class="post-author">
+            <a href="/profile">
+                <img src="https://www.looper.com/img/gallery/the-untold-truth-of-bruce-wayne/bruce-wayne-is-actually-batmans-mask-1638569177.jpg" alt="Avatar" class="post-avatar">
+            </a>
+            <div>
+                <!-- Uses 'post' matching the key from render_template -->
+                <strong>@{{ post[3] }}</strong>
+                <time datetime="2026-10-17">Oct 17, 2026</time>
+            </div>
+        </div>
+        <a href="#" class="btn">Follow</a>
+    </div>
+
+    <!-- Post content -->
+    <p class="post-body">
+        {{ post[2] }}
+    </p>
+
+    <span class="happiness">🌦️ Great</span>
+
+    <!-- Interactions -->
+    <div class="post-actions">
+        <button type="button" class="post-action">
+            ♡ 24 Happiness
+        </button>
+    </div>
+  </article>
+
+  <section>
+          
+    <h3>Comments</h3>
+    {% for comment in comments %}
+    <article class="card post">
+    
+        <!-- Author -->
+        <div class="post-header">
+    
+            <div class="post-author">
+    
+                <a href="/profile">
+                    <img src="https://www.looper.com/img/gallery/the-untold-truth-of-bruce-wayne/bruce-wayne-is-actually-batmans-mask-1638569177.jpg" alt="John Doe"
+                        class="post-avatar">
+                </a>
+    
+                <div>
+                    <strong>@{{ comment[2] }}</strong>
+                    <time datetime="2026-10-17">Oct 17, 2026</time>
+                </div>
+    
+            </div>
+    
+            <a href="#" class="btn">Follow</a>
+    
+        </div>
+    
+        <!-- Post content -->
+        <p class="post-body">
+            {{ comment[1] }}
+        </p>
+    
+        <span class="happiness">🌦️ Great</span>
+    
+        <!-- Interactions -->
+        <div class="post-actions">
+    
+            <button type="button" class="post-action" >
+                ♡ 24 Happiness
+            </button>  
+        </div>
+    
+    </article>
+  {% endfor %}
+</section>
+{% endblock %}

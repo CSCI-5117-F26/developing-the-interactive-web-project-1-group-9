@@ -32,61 +32,11 @@
 
             </form>
         </section>
-
-        <!-- Pinned Posts -->
-        <section>
-            <h3>Pinned Post</h3>
-
-            <article class="card post">
-            
-                <!-- Author -->
-                <div class="post-header">
-            
-                    <div class="post-author">
-            
-                        <a href="/profile">
-                            <img src="http://farm8.staticflickr.com/7448/8915936174_8d54ec76c6.jpg" alt="John Doe" class="post-avatar">
-                        </a>
-            
-                        <div>
-                            <strong>John Cena</strong>
-                            <time datetime="2026-10-17">Oct 17, 2026</time>
-                        </div>
-            
-                    </div>
-            
-                    <a href="#" class="btn">Follow</a>
-            
-                </div>
-            
-                <!-- Post content -->
-                <p class="post-body">
-                    I am happy! Today has been such a wonderful day.
-                    Just wanted to share a little sunshine with everyone.
-                </p>
-            
-                <span class="happiness">☀️ Joy</span>
-            
-                <!-- Interactions -->
-                <div class="post-actions">
-            
-                    <button type="button" class="post-action">
-                        ♡ 24 Happiness
-                    </button>
-            
-                    <button type="button" class="post-action">
-                        ◯ 12 Comments
-                    </button>
-            
-                </div>
-            
-            </article>
-        </section>
-
         <!-- Recent Posts -->
         <section>
+          
             <h3>Recent Posts</h3>
-
+            {% for post in posts %}
             <article class="card post">
             
                 <!-- Author -->
@@ -100,7 +50,7 @@
                         </a>
             
                         <div>
-                            <strong>Bruce Wayne</strong>
+                            <strong>@{{ post[3] }}</strong>
                             <time datetime="2026-10-17">Oct 17, 2026</time>
                         </div>
             
@@ -112,7 +62,7 @@
             
                 <!-- Post content -->
                 <p class="post-body">
-                    Feels like a good day for something?
+                    {{ post[2] }}
                 </p>
             
                 <span class="happiness">🌦️ Great</span>
@@ -120,21 +70,21 @@
                 <!-- Interactions -->
                 <div class="post-actions">
             
-                    <button type="button" class="post-action">
+                    <button type="button" class="post-action" >
                         ♡ 24 Happiness
                     </button>
             
-                    <button type="button" class="post-action">
+                    <a class="post-action" href="{{ url_for('post_page', post_id=post[0]) }}">
                         ◯ 12 Comments
-                    </button>
+                    </a>
             
                 </div>
             
             </article>
 
-            <article class="card post">
+            <!-- <article class="card post">
             
-                <!-- Author -->
+                
                 <div class="post-header">
             
                     <div class="post-author">
@@ -153,16 +103,14 @@
             
                     <a href="#" class="btn">Follow</a>
             
-                </div>
+                </div> 
             
-                <!-- Post content -->
                 <p class="post-body">
                     Sunshine and rainbow blah blah blah 
                 </p>
             
                 <span class="happiness">☀️ Excited</span>
-            
-                <!-- Interactions -->
+
                 <div class="post-actions">
             
                     <button type="button" class="post-action">
@@ -175,7 +123,8 @@
             
                 </div>
             
-            </article>
+            </article> -->
+          {% endfor %}
         </section>
 
 
