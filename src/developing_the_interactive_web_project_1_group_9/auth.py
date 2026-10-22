@@ -3,9 +3,10 @@ from auth0_server_python.auth_server.server_client import ServerClient
 from auth0_server_python.store import StateStore
 from dotenv import load_dotenv
 import asyncpg
+import psycopg
 import json
 import secrets
-from typing import Dict, Any, Optional
+import pickle
 
 load_dotenv()
 db_url = os.getenv('DB_URL')
@@ -44,42 +45,6 @@ class MemoryTransactionStore:
     async def delete(self, key, options=None):
         self._data.pop(key, None)
 
-class DBStateStore(StateStore):
-    def __init__(self, secret):
-        super().__init__({"secret": secret})
-        pass
-    
-    async def set(self, key, value, options = None):
-        conn = psycopg.connect(db_url)
-        cursor = conn.cursor()
-        cursor.execute(
-                """
-                INSERT INTO auth_sessions (session_id, session_data)
-                VALUES ($1, $2)
-                ON CONFLICT (session_id) DO UPDATE SET session_data = EXCLUDED.session_data
-                """,
-                key, json.dumps(value)
-            )
-        conn.commit()
-        cursor.close()
-        conn.close()
-
-    async def get(self, key, value, options= None):
-        conn = asyncpg.connect(db_url)
-        cursor = conn.cursor()
-        row = await conn.fetchrow(
-                "SELECT data FROM auth_sessions WHERE session_id = $1", key
-            )
-        await conn.commit()
-        await cursor.close()
-        await conn.close()
-        if row and row["data"]:
-            return json.loads(row["data"])
-        return None
-
-    async def delete(self, key, options=None):
-        pass
-
 # The Docs are HORRIBLE, so I'll explain how this works
 # The identifier passed in will be the name of the cookie, not the field it's querying
 # The job of set is to store the data as a single encrypted blob, and store it's own generated key in a cookie
@@ -104,6 +69,7 @@ class PostgresStateStore(StateStore):
         if not self.pool:
             self.pool = await asyncpg.create_pool(dsn=self.dsn)
 
+
     async def set(
         self, 
         identifier: str, 
@@ -112,47 +78,40 @@ class PostgresStateStore(StateStore):
     ) -> None:
         if not options or "response" not in options:
             raise ValueError("Response object is required for setting a cookie in PostgresStateStore.")
-        
-        response = options["response"]
-        session_id = secrets.token_urlsafe(10)
-
-        print("Set Called:")
-        print("Identifier %s", identifier)
-        print("State:")
-        print(state)
-
-        await self.init_pool()
-        async with self.pool.acquire() as conn:
-            # Optionally encrypt `state`:
-            # encrypted_data = self.encrypt(session_id, state)
-            # For simplicity, store as JSON
-            data_json = json.dumps(state, default=str)
-
-            # Insert or update the session
-            await conn.execute(
-                """
-                INSERT INTO auth_sessions(session_id, session_data)
-                VALUES($1, $2)
-                ON CONFLICT (session_id) DO UPDATE SET session_data=excluded.session_data
-                """,
-                session_id,
-                data_json
-            )
+        #print("Set Called:")
+        #print("Identifier %s", identifier)
+        #print("State:")
+        #print(state)
+        session_id = secrets.token_urlsafe(190)
+        conn = psycopg.connect(db_url)
+        cursor = conn.cursor()
+        # Optionally encrypt `state`:
+        # encrypted_data = self.encrypt(session_id, state)
+        # For simplicity, store as JSON
+        data = pickle.dumps(state)
+        #print("dumped state:")
+        #print(data)
+        # Insert or update the session
+        cursor.execute(
+            """
+            INSERT INTO auth_sessions(session_id, session_data)
+            VALUES(%s, %s)
+            ON CONFLICT (session_id) DO UPDATE SET session_data=excluded.session_data
+            """,
+            (session_id,data)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
 
         # Set the cookie containing session_id
+        response = options["response"]
         response.set_cookie(
             key=identifier,
             value=session_id,
             httponly=True,
-            samesite="Lax",
-            max_age=86400,  # 1 day example
-            path="/"
-        )
-        response.set_cookie(
-            key=identifier,
-            value=session_id,
-            httponly=True,
-            samesite="Lax",
+            samesite="None",
+            secure=True,
             max_age=86400,  # 1 day example
             path="/"
         )
@@ -165,25 +124,28 @@ class PostgresStateStore(StateStore):
         if not options or "request" not in options:
             raise ValueError("Request object is required to read cookies in PostgresStateStore.")
 
-        print("Get Called:")
-        print("Identifier %s", identifier)
+        #print("Get Called:")
+        #print("Identifier %s", identifier)
 
         request = options["request"]
         session_id = request.cookies.get(identifier)
-        print("Retrived session id: %s", session_id)
         if not session_id:
             return None
-
-        await self.init_pool()
-        async with self.pool.acquire() as conn:
-            row = await conn.fetchrow(
-                "SELECT session_data FROM auth_sessions WHERE session_id = $1",
-                session_id
-            )
-            if not row:
-                return None
-            # If you used encryption, do self.decrypt(...)
-            return json.loads(row["session_data"])
+        #print("Retrived session id: %s", session_id)
+        conn = psycopg.connect(db_url)
+        cursor = conn.cursor()
+        cursor.execute("SELECT session_data FROM auth_sessions WHERE session_id = %s", (session_id,))
+        row = cursor.fetchone()
+        if not row:
+            return None
+        # If you used encryption, do self.decrypt(...)
+        data = pickle.loads(row[0])
+        #print("loaded data")
+        #print(data)
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return data
 
     async def delete(
         self, 
@@ -197,13 +159,18 @@ class PostgresStateStore(StateStore):
         request = options["request"]
         session_id = request.cookies.get(self.cookie_name)
 
-        await self.init_pool()
         if session_id:
-            async with self.pool.acquire() as conn:
-                await conn.execute("DELETE FROM auth_sessions WHERE session_id = $1", session_id)
+            conn = psycopg.connect(db_url)
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM auth_sessions WHERE session_id = %s", (session_id,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+
 
         response.delete_cookie(self.cookie_name)
 
+    # DO NOT USE!!! Will fix if we end up using this method of logout
     async def delete_by_logout_token(
         self, 
         claims: Dict[str, Any], 
@@ -225,10 +192,129 @@ class PostgresStateStore(StateStore):
                 claims.get("sub")
             )
 
+# Temporary class while shared memory across gunicorn is not figured out
+# Everything here is shortlived, cleanup scripts should be run often
+class PostgresTransactionStore(StateStore):
+    """
+    A stateful store that uses Postgres to store session data.
+    The cookie holds just a session_id; the rest of the data is in Postgres.
+    """
+
+    def __init__(self, secret: str, dsn: str, cookie_name: str = "_a0_transaction"):
+        super().__init__({"secret": secret})
+        self.dsn = dsn  # "postgresql://user:password@host:port/dbname"
+        self.cookie_name = cookie_name
+        self.pool = None  # We'll initialize a connection pool later.
+
+    async def init_pool(self):
+        """Create a connection pool. Call this once on startup."""
+        if not self.pool:
+            self.pool = await asyncpg.create_pool(dsn=self.dsn)
+
+
+    async def set(
+        self, 
+        identifier: str, 
+        state: Dict[str, Any], 
+        options: Optional[Dict[str, Any]] = None
+    ) -> None:
+        if not options or "response" not in options:
+            raise ValueError("Response object is required for setting a cookie in PostgresStateStore.")
+        #print("Set Called:")
+        #print("Identifier %s", identifier)
+        #print("State:")
+        #print(state)
+        transaction_id = secrets.token_urlsafe(16)
+        conn = psycopg.connect(db_url)
+        cursor = conn.cursor()
+        # Optionally encrypt `state`:
+        # encrypted_data = self.encrypt(session_id, state)
+        # For simplicity, store as JSON
+        data = pickle.dumps(state)
+        #print("dumped state:")
+        #print(data)
+        # Insert or update the session
+        cursor.execute(
+            """
+            INSERT INTO auth_transactions(transaction_id, transaction_data)
+            VALUES(%s, %s)
+            ON CONFLICT (transaction_id) DO UPDATE SET transaction_data=excluded.transaction_data
+            """,
+            (transaction_id,data)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        # Set the cookie containing session_id
+        response = options["response"]
+        response.set_cookie(
+            key=identifier,
+            value=transaction_id,
+            httponly=True,
+            samesite="None",
+            secure=True,
+            max_age=86400,  # 1 day example
+            path="/"
+        )
+
+    async def get(
+        self, 
+        identifier: str, 
+        options: Optional[Dict[str, Any]] = None
+    ) -> Optional[Dict[str, Any]]:
+        if not options or "request" not in options:
+            raise ValueError("Request object is required to read cookies in PostgresStateStore.")
+
+        #print("Get Called:")
+        #print("Identifier %s", identifier)
+
+        request = options["request"]
+        transaction_id = request.cookies.get(identifier)
+        if not transaction_id:
+            return None
+        #print("Retrived session id: %s", session_id)
+        conn = psycopg.connect(db_url)
+        cursor = conn.cursor()
+        cursor.execute("SELECT transaction_data FROM auth_transactions WHERE transaction_id = %s", (transaction_id,))
+        row = cursor.fetchone()
+        if not row:
+            return None
+        # If you used encryption, do self.decrypt(...)
+        data = pickle.loads(row[0])
+        #print("loaded data")
+        #print(data)
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return data
+
+    async def delete(
+        self, 
+        identifier: str, 
+        options: Optional[Dict[str, Any]] = None
+    ) -> None:
+        if not options or "response" not in options:
+            raise ValueError("Response object is required to clear cookies in PostgresStateStore.")
+        
+        response = options["response"]
+        request = options["request"]
+        transaction_id = request.cookies.get(self.cookie_name)
+
+        if transaction_id:
+            conn = psycopg.connect(db_url)
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM auth_transactions WHERE transaction_id = %s", (transaction_id,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+
+        response.delete_cookie(self.cookie_name)
 
 # Initialize stores
 state_store = PostgresStateStore(os.getenv('AUTH0_SECRET'), db_url)
-transaction_store = MemoryTransactionStore() # Will be replaced by postgres transaction store which will more or less be copy-paste of statestore
+transaction_store = PostgresTransactionStore(os.getenv('AUTH0_SECRET'), db_url)
 
 # Initialize the Auth0 ServerClient
 auth0 = ServerClient(
