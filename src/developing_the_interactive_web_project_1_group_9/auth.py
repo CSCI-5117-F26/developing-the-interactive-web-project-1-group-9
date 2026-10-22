@@ -12,6 +12,7 @@ from typing import Dict, Any, Optional
 load_dotenv()
 db_url = os.getenv('DB_URL')
 
+# Credit for memory stores to Auth0 quickstart guides (also it's the starting point for auth.py as a whole)
 # Simple in-memory storage for development
 # For production, use Redis, PostgreSQL, or other persistent storage
 class MemoryStateStore:
@@ -32,6 +33,8 @@ class MemoryStateStore:
         # For backchannel logout support
         pass
 
+# This class should eventually be the basis for a shared memory transaction store
+# suitable for gunicorn.
 class MemoryTransactionStore:
     """In-memory transaction store for OAuth flows (development only)"""
     def __init__(self):
@@ -53,6 +56,9 @@ class MemoryTransactionStore:
 # give it the correct user's auth block. In other words, auth0 is not asking you to rummage through the giant
 # state object itself, it want the whole state. It's just your job to make sure you're passing the current
 # user's state via cookies.
+# Initial PostgresStateStore is from auth0 store examples. But it has been heavily modified by yours
+# truly as the example code simply doesn't work (and as a bonus they use asyncpg but the code has race
+# conditions meaning it will fail... sometimes. Don't we all love non-deterministic bugs?)
 class PostgresStateStore(StateStore):
     """
     A stateful store that uses Postgres to store session data.
@@ -313,21 +319,27 @@ class PostgresTransactionStore(StateStore):
 
         response.delete_cookie(self.cookie_name)
 
-# Initialize stores
+
+# Initialize stores, these can be kept global as they open and close connection
 state_store = PostgresStateStore(os.getenv('AUTH0_SECRET'), db_url)
 transaction_store = PostgresTransactionStore(os.getenv('AUTH0_SECRET'), db_url)
 
-# Initialize the Auth0 ServerClient
-auth0 = ServerClient(
-    domain=os.getenv('AUTH0_DOMAIN'),
-    client_id=os.getenv('AUTH0_CLIENT_ID'),
-    client_secret=os.getenv('AUTH0_CLIENT_SECRET'),
-    secret=os.getenv('AUTH0_SECRET'),
-    redirect_uri=os.getenv('AUTH0_REDIRECT_URI'),
-    state_store=state_store,
-    transaction_store=transaction_store,
-    authorization_params={
-        'scope': 'openid profile email',
-        'audience': os.getenv('AUTH0_AUDIENCE', '')  # Optional: for API access
-    }
-)
+# Initialize the Auth0 ServerClient inside a function
+# Because auth0 is async and thus requires flask to be flask[async]
+# We need to attach a new serverclient to the current asyncio object
+# Let's play a game, did the docs mention this? (NO, THE ANSWER IS NO)
+def init_auth0():
+    auth0 = ServerClient(
+        domain=os.getenv('AUTH0_DOMAIN'),
+        client_id=os.getenv('AUTH0_CLIENT_ID'),
+        client_secret=os.getenv('AUTH0_CLIENT_SECRET'),
+        secret=os.getenv('AUTH0_SECRET'),
+        redirect_uri=os.getenv('AUTH0_REDIRECT_URI'),
+        state_store=state_store,
+        transaction_store=transaction_store,
+        authorization_params={
+            'scope': 'openid profile email',
+            'audience': os.getenv('AUTH0_AUDIENCE', '')  # Optional: for API access
+        }
+    )
+    return auth0
