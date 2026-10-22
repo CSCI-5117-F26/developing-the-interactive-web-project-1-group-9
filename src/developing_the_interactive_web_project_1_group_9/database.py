@@ -104,11 +104,27 @@ def create_post(userid, title, content):
 def get_post(postid):
     conn = psycopg.connect(os.environ["DATABASE_URL"])
     cur = conn.cursor()
-    cur.execute("""SELECT * FROM posts WHERE id = %s; """, (postid,))
+    cur.execute("""SELECT
+                     posts.id,
+                     posts.user_id,
+                     posts.content,
+                     posts.likes_count,
+                     users.username,
+                     posts.post_created
+                  FROM posts 
+                  JOIN users on posts.user_id = users.id
+                  WHERE posts.id = %s; """, (postid,)
+                     )
     post = cur.fetchone()
     conn.commit()
     cur.close()
     conn.close()
+    if post:
+        post = list(post)
+        print(post[5])
+        post[5] = post[5].strftime("%m/%d/%y")
+        print(post[5])
+
     return post
 
 def get_posts():
@@ -128,17 +144,22 @@ def get_posts_with_usernames():
       """
       SELECT
         posts.id,
-        posts.title,
         posts.content,
-        users.username
+        users.username,
+        posts.likes_count,
+        posts.comment_count,
+        posts.post_created
       FROM posts
       JOIN users ON posts.user_id = users.id;
       """
     )
     posts = cur.fetchall()
-    conn.commit()
-    cur.close()
-    conn.close()
+    if posts:
+        posts = [
+        [row[0], row[1], row[2], row[3], row[4], row[5].strftime("%m/%d/%y")]
+        for row in posts
+    ]
+    print(posts)
     return posts
 
 def edit_post(postid, title, content):

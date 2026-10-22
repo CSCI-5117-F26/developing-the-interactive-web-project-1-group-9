@@ -6,14 +6,7 @@
 
 <div class="page feed">
 
-    <!-- Header -->
-    <header class="topbar">
-        <a href="/profile" class="btn btn-primary">My Profile</a>
-
-        <form class="pure-form" role="search">
-            <input class="search" type="search" placeholder="Search people and posts">
-        </form>
-    </header>
+    
 
     <!-- Feed -->
     <main>
@@ -50,8 +43,8 @@
                         </a>
             
                         <div>
-                            <strong>@{{ post[3] }}</strong>
-                            <time datetime="2026-10-17">Oct 17, 2026</time>
+                            <strong>@{{ post[2] }}</strong>
+                            <time datetime="2026-10-17">{{post[5]}}</time>
                         </div>
             
                     </div>
@@ -62,7 +55,7 @@
             
                 <!-- Post content -->
                 <p class="post-body">
-                    {{ post[2] }}
+                    {{ post[1] }}
                 </p>
             
                 <span class="happiness">🌦️ Great</span>
@@ -71,59 +64,17 @@
                 <div class="post-actions">
             
                     <button type="button" class="post-action" >
-                        ♡ 24 Happiness
+                        {{post[3]}} Happiness
                     </button>
             
                     <a class="post-action" href="{{ url_for('post_page', post_id=post[0]) }}">
-                        ◯ 12 Comments
+                      {{post[4]}} Comments
                     </a>
             
                 </div>
             
             </article>
 
-            <!-- <article class="card post">
-            
-                
-                <div class="post-header">
-            
-                    <div class="post-author">
-            
-                        <a href="/profile">
-                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRC9BHG38kwC4ZcCU55wMoi6Z3kNDqcccIAKE6s56li6a4jiWnGl45lJhZ5&s=10" alt="Mr Kent"
-                                class="post-avatar">
-                        </a>
-            
-                        <div>
-                            <strong>Clark Kent</strong>
-                            <time datetime="2026-10-17">Oct 17, 2026</time>
-                        </div>
-            
-                    </div>
-            
-                    <a href="#" class="btn">Follow</a>
-            
-                </div> 
-            
-                <p class="post-body">
-                    Sunshine and rainbow blah blah blah 
-                </p>
-            
-                <span class="happiness">☀️ Excited</span>
-
-                <div class="post-actions">
-            
-                    <button type="button" class="post-action">
-                        ♡ 24 Happiness
-                    </button>
-            
-                    <button type="button" class="post-action">
-                        ◯ 12 Comments
-                    </button>
-            
-                </div>
-            
-            </article> -->
           {% endfor %}
         </section>
 
@@ -132,5 +83,11 @@
 
 
 </div>
+
+<script>
+  function increaseHappiness() {
+
+  }
+</script>
 
 {% endblock %}
