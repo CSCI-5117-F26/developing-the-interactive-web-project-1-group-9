@@ -1,9 +1,9 @@
 from flask import Flask, render_template, request, jsonify
 # import psycopg
-#import os
+import os
 
 app = Flask(__name__)
-
+app.secret_key = os.getenv('AUTH0_SECRET')
 
 
 # url =  os.environ["DATABASE_URL"]
@@ -24,17 +24,59 @@ app = Flask(__name__)
 
 @app.route("/")
 @app.route("/signin")
-def login():
-    return render_template("login.html")
+async def login():
+    """Redirect to Auth0 login"""
+    response = make_response()
+    store_options = {"request": request, "response": response}
+    authorization_url = await auth0.start_interactive_login({}, store_options)
+    response.status_code = 302
+    response.headers["Location"] = authorization_url
+    return response
+
+
+@app.route('/callback')
+async def callback():
+    """Handle Auth0 callback after login"""
+    response = make_response()
+    store_options = {"request": request, "response": response}
+    try:
+        result = await auth0.complete_interactive_login(str(request.url), store_options)
+        response.status_code = 302
+        response.headers["Location"] = url_for('index')
+        return response
+    except Exception as e:
+        return f"Authentication error: {str(e)}", 400
+
+@app.route('/logout')
+async def logout():
+    """Logout and redirect to Auth0 logout"""
+    response = make_response()
+    store_options = {"request": request, "response": response}
+    options = LogoutOptions(return_to=url_for("index", _external=True))
+    logout_url = await auth0.logout(options, store_options)
+    response.status_code = 302
+    response.headers["Location"] = logout_url
+    return response
 
 @app.route("/signup")
 def signup():
     return render_template("signup.html")
 
 @app.route("/feeds")
-def feeds():
+async def feeds():
+    store_options = {"request": request}
+    user = await auth0.get_user(store_options)
+    # Whatever logic we use to personalize feed to user goes here
     return render_template("feeds.html")
 
+# I'm assuming /profile is personal profile, and there's different route
+# For looking at other people's profile?
 @app.route("/profile")
 def feed():
+    store_options = {"request": request}
+    user = await auth0.get_user(store_options)
+    if not user:
+        return redirect(url_for('login'))
+    
+    # Logic to get profile info
     return render_template("profile.html")
