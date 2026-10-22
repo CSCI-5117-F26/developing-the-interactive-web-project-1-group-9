@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect
 # import psycopg
 import os
 
@@ -80,3 +80,19 @@ async def feed():
     
     # Logic to get profile info
     return render_template("profile.html")
+
+@app.route("/profile/edit", methods=["POST"])
+def update_profile():
+    userid = 0 #placeholder
+    bio = request.form.get("bio")
+    profile_picture = request.files.get("profile_picture")
+    profile_banner = request.files.get("profile_banner")
+    if bio:
+        set_bio(userid, bio)
+    if profile_picture:
+        image = profile_picture.read()
+        set_profile_picture(userid, image)
+    if profile_banner:
+        image = profile_banner.read()
+        set_banner(userid, image)
+    return redirect("/profile")
