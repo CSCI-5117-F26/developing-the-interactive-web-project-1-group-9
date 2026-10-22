@@ -72,7 +72,7 @@ async def feeds():
 # I'm assuming /profile is personal profile, and there's different route
 # For looking at other people's profile?
 @app.route("/profile")
-def feed():
+async def feed():
     store_options = {"request": request}
     user = await auth0.get_user(store_options)
     if not user:
