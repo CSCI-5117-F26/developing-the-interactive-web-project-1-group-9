@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify, g, Response, make_response, redirect, url_for
 from auth0_server_python.auth_types import LogoutOptions
-from .auth import auth0
+from developing_the_interactive_web_project_1_group_9.auth import auth0
 from dotenv import load_dotenv
 # import psycopg
 import os
