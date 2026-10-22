@@ -26,6 +26,8 @@ app.secret_key = os.getenv('AUTH0_SECRET')
 
 
 @app.route("/")
+
+
 @app.route("/signin")
 async def login():
     """Redirect to Auth0 login"""
@@ -45,7 +47,7 @@ async def callback():
     try:
         result = await auth0.complete_interactive_login(str(request.url), store_options)
         response.status_code = 302
-        response.headers["Location"] = url_for('index')
+        response.headers["Location"] = url_for('feed')
         return response
     except Exception as e:
         return f"Authentication error: {str(e)}", 400
@@ -55,7 +57,7 @@ async def logout():
     """Logout and redirect to Auth0 logout"""
     response = make_response()
     store_options = {"request": request, "response": response}
-    options = LogoutOptions(return_to=url_for("index", _external=True))
+    options = LogoutOptions(return_to=url_for("feeds", _external=True))
     logout_url = await auth0.logout(options, store_options)
     response.status_code = 302
     response.headers["Location"] = logout_url

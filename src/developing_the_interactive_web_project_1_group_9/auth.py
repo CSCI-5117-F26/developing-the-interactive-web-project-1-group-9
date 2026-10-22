@@ -7,6 +7,7 @@ import psycopg
 import json
 import secrets
 import pickle
+from typing import Dict, Any, Optional
 
 load_dotenv()
 db_url = os.getenv('DB_URL')
