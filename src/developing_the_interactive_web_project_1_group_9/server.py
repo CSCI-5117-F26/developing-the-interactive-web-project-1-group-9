@@ -52,6 +52,8 @@ async def callback():
     store_options = {"request": request, "response": response}
     try:
         result = await auth0.complete_interactive_login(str(request.url), store_options)
+        response.status_code = 302
+        response.headers["Location"] = url_for('feed')
         user = await auth0.get_user(store_options)
         print("user: ", user)
         auth0_id = user["sub"]
@@ -60,8 +62,6 @@ async def callback():
         userid = get_user_by_auth0(auth0_id)
         if userid is None:
             create_user(auth0_id, username, email)
-        response.status_code = 302
-        response.headers["Location"] = url_for('feed')
         return response
     except Exception as e:
         return f"Authentication error: {str(e)}", 400
