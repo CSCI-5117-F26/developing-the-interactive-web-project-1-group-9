@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+
+<div class="page profile" data-view="owner">
+
+    <header class="topbar">
+        <a href="/feeds" class="btn btn-primary">Main feed</a>
+        <form class="pure-form" role="search">
+            <input class="search" type="search" placeholder="Search people and posts">
+        </form>
+    </header>
+
+    <div class="pure-g">
+
+        <!-- LEFT -->
+        <aside class="pure-u-1 pure-u-md-1-4 sidebar">
+
+            <div class="profile-info">
+                <div class="avatar">
+                    <img src="https://s3.amazonaws.com/comicgeeks/characters/avatars/22065.jpg?t=1756153029" alt="John Doe">
+                </div>
+
+                <div class="profile-details">
+                    <h1 class="name">Barry Allan</h1>
+                    <p class="handle">@jdoe</p>
+
+                    <div class="profile-bio">
+                        <h4>Bio</h4>
+                        <p>Here to post the small things that make me happy.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-stats">
+                <!-- Button and Dialog to show following -->
+                <button command="show-modal" commandfor="user-following" class="btn btn-block stat">
+                    <span>Following</span>
+                    <strong>182</strong>
+                </button>
+            
+                <dialog id="user-following" class="profile-dialog">
+                    <p>This is where users can see who they are following</p>
+                    <button commandfor="user-following" command="close">Close</button>
+                </dialog>
+            
+                <!-- Button and Dialog to show followers -->
+                <button command="show-modal" commandfor="user-followers" class="btn btn-block stat">
+                    <span>Followers</span>
+                    <strong>1,204</strong>
+                </button>
+            
+                <dialog id="user-followers" class="profile-dialog">
+                    <p>This is where users can view their followers</p>
+                    <button commandfor="user-followers" command="close">Close</button>
+                </dialog>
+            
+            </div>
+            <p></p>
+
+            <div class="profile-stats">
+                <button command="show-modal" commandfor="edit-profile" class="btn btn-block" data-show="owner">
+                    Edit Profile
+                </button>
+
+                <!-- Dialog to show edit profile -->
+                <dialog id="edit-profile" class="profile-dialog">
+                    <form action="/profile/edit" method="POST" enctype="multipart/form-data">
+                        <label>Bio</label>
+                        <textarea name="bio"></textarea>
+                        <br>
+                        <label>Profile Picture</label>
+                        <input type="file" name="profile_picture" accept="image">
+                        <br>
+                        <label>Profile Banner</label>
+                        <input type="file" name="profile_banner" accept="image">
+                        <button type="submit" class="btn btn-block">Save Changes</button>
+                    </form>
+                    <button commandfor="edit-profile" command="close">Close</button>
+                </dialog>
+
+                <button class="btn btn-primary btn-block" data-show="other">
+                    Follow
+                </button>
+
+                <a href="/signin" class="btn btn-block" data-show="guest">
+                    Log in to follow
+                </a>
+
+                <p></p>
+
+                <a href="/logout" class="btn btn-block" data-show="owner">
+                    Log out
+                </a>
+            </div>
+
+           
+
+        </aside>
+
+        <!-- RIGHT -->
+        <main class="pure-u-1 pure-u-md-3-4">
+            <div class="banner">
+                <img src="https://media.desenio.com/site_images/68631c017d2ae084e18280d5_1521787322_WB0043-5.jpg" alt="John Doe"
+                    >
+            </div>
+
+            <hr>
+            <p> My Posts </p>
+            <hr>
+
+            <article class="card post">
+            
+                <!-- Author -->
+                <div class="post-header">
+            
+                    <div class="post-author">
+            
+                        <a href="/profile">
+                            <img src="https://s3.amazonaws.com/comicgeeks/characters/avatars/22065.jpg?t=1756153029"
+                                alt="John Doe" class="post-avatar">
+                        </a>
+            
+                        <div>
+                            <strong>Barry Allen</strong>
+                            <time datetime="2026-10-17">Oct 17, 2026</time>
+                        </div>
+            
+                    </div>
+            
+                    <a href="#" class="btn">Follow</a>
+            
+                </div>
+            
+                <!-- Post content -->
+                <p class="post-body">
+                    Feels like a good day for something?
+                </p>
+            
+                <span class="happiness">🌦️ Great</span>
+            
+                <!-- Interactions -->
+                <div class="post-actions">
+            
+                    <button type="button" class="post-action">
+                        ♡ 24 Happiness
+                    </button>
+            
+                    <button type="button" class="post-action">
+                        ◯ 12 Comments
+                    </button>
+            
+                </div>
+            
+            </article>
+
+        </main>
+    </div>
+
+    <script>
+        // change button depending on viewing status
+        document.querySelectorAll('[data-set-view]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelector('.profile').dataset.view = btn.dataset.setView;
+                document.querySelectorAll('[data-set-view]').forEach(b =>
+                    b.setAttribute('aria-pressed', b === btn));
+            });
+        });
+    </script>
+
+</div>
+
+{% endblock %}

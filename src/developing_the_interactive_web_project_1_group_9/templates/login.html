@@ -1,0 +1,79 @@
+{% extends "auth-base.html" %}
+
+{% block title %} Login {% endblock %}
+
+
+{% block auth_content %}
+
+<h2>Sign In</h2>
+
+<form class="pure-form pure-form-stacked">
+    <!-- Form -->
+    <fieldset>
+        <label for="email">Email</label>
+        <input id="email" type="email" name="email" required>
+
+        <label for="password">Password</label>
+        <input id="password" type="password" name="password" required>
+
+        <div class="auth-options">
+            <label class="pure-checkbox">
+                <input type="checkbox" name="remember">
+                Remember me
+            </label>
+        </div>
+
+        <form action="/feeds">
+            <button type="submit" class="btn btn-primary btn-block">
+                Sign in
+            </button>
+        </form>
+    </fieldset>
+</form>
+
+<button command="show-modal" commandfor="forgot-password" class="btn btn-block">
+    Forgot password?
+</button>
+
+<!-- Dialog to show forgot password -->
+<dialog id="forgot-password" class="profile-dialog">
+    <h3>Reset Password</h3>
+    <p>Enter your email address to receive a password reset link</p>
+    <form method="post" action="/forgot_password" class="pure-form pure-form-stacked">
+        <input type="email" id="reset-email" name="email" placeholder="email" required>
+    
+        <p></p>
+        <button type="submit" class="btn btn-primary">
+            Send Reset Link
+        </button>
+    
+        <button type="button" commandfor="forgot-password" command="close" class="btn">
+            Cancel
+        </button>
+    </form>
+
+</dialog>
+
+<!-- <p style="text-align: center; color: var(--muted);">
+    OR
+</p> -->
+
+<fieldset class="fieldset-divider">
+    <legend>or</legend>
+</fieldset>
+
+
+
+<a href="/feeds" class="btn btn-block">
+    Continue as Guest
+</a>
+
+
+{% endblock %}
+
+{% block auth_links %}
+<p style="text-align: center;">
+    Don't have an account?
+    <a href="/signup" style="color: var(--primary);">Sign up</a>
+</p>
+{% endblock %}

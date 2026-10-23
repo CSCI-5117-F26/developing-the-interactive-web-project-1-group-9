@@ -4,14 +4,17 @@ CSCI 5117, Fall 2026, [assignment description](https://canvas.umn.edu/courses/57
 
 ## App Info:
 
-* Team Name: TODO
-* App Name: TODO
+* Team Name: The Chefs
+* App Name: Sunshine
 * App Link: <https://TODO.com/>
 
 ### Students
 
 * First Last, x500@umn.edu
-* ...
+* Adam Meziou, mezio004@umn.edu
+* Ali Imihy, imihy001@umn.edu
+* Gideon Okoroafor, okoro062@umn.edu
+* Ayaan Mallick, malli143@umn.edu
 
 
 ## Key Features
@@ -35,6 +38,12 @@ along with a very brief caption:**
 
 ![](https://media.giphy.com/media/o0vwzuFwCGAFO/giphy.gif)
 
+The following screenshot depicts 4 mock up images of different pages on our planned web app.
+
+![Alt text](/screenshots/mockup_mainfeed.png)
+![Alt text](/screenshots/mockup_profile.png)
+![Alt text](/screenshots/mockup_login.png)
+![Alt text](/screenshots/mockup_postscreen.png)
 
 ## Mock-up 
 
@@ -60,3 +69,5 @@ relied on external code, expertise, or anything else, please disclose that
 here:**
 
 ...
+## Credits
+*(https://purecss.io) licensed under the [Yahoo BSD License](https://github.com). Copyright (c) 2013, Yahoo! Inc.
