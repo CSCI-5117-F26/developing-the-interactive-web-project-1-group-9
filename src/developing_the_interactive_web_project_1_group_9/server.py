@@ -52,7 +52,7 @@ async def callback():
     try:
         result = await auth0.complete_interactive_login(str(request.url), store_options)
         user = await auth0.get_user(store_options)
-
+        print(user)
         auth0_id = user["sub"]
         email = user["email"]
         username = user.get("username", email.split("@")[0]) # if no username just use email
