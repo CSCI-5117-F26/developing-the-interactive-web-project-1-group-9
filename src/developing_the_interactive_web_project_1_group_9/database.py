@@ -123,6 +123,9 @@ def get_user_id(username):
     return False
 
 def get_user_by_auth0(auth0_id):
+    print("DB_HOST =", os.getenv("DB_HOST")) # debug since connection isnt working
+    print("DB_DATABASE =", os.getenv("DB_DATABASE"))
+    print("DB_USER =", os.getenv("DB_USER"))
     conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
     cur = conn.cursor()
     cur.execute("SELECT id FROM users WHERE auth_id = %s;", (auth0_id,))
