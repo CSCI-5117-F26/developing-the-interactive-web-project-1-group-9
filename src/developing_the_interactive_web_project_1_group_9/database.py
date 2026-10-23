@@ -29,30 +29,30 @@ def set_bio(userid, bio):
     cur.close()
     conn.close()
 
-def set_profile_picture(userid, image):
+def set_profile_picture(userid, filename, image):
     conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO pfps (user_id, image_data)
+        INSERT INTO pfps (user_id, file_name, image_data)
         VALUES (%s, %s)
         ON CONFLICT (user_id)
         DO UPDATE SET
         image_data = EXCLUDED.image_data;
-    """, (userid, psycopg.Binary(image)))
+    """, (userid, filename, psycopg.Binary(image)))
     conn.commit()
     cur.close()
     conn.close()
 
-def set_banner(userid, image):
+def set_banner(userid, filename, image):
     conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO banners (user_id, image_data)
+        INSERT INTO banners (user_id, file_name, image_data)
         VALUES (%s, %s)
         ON CONFLICT (user_id)
         DO UPDATE SET
         image_data = EXCLUDED.image_data;
-    """, (userid, psycopg.Binary(image)))
+    """, (userid, filename, psycopg.Binary(image)))
     conn.commit()
     cur.close()
     conn.close()

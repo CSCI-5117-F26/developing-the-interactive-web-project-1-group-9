@@ -91,3 +91,21 @@ async def feed():
     
     # Logic to get profile info
     return render_template("profile.html")
+
+@app.route("/profile/edit", methods=["POST"])
+def update_profile():
+    userid = 0 #placeholder
+    bio = request.form.get("bio")
+    profile_picture = request.files.get("profile_picture")
+    pfp_name = profile_picture.filename
+    profile_banner = request.files.get("profile_banner")
+    banner_name = profile_banner.filename
+    if bio:
+        set_bio(userid, bio)
+    if profile_picture:
+        image = profile_picture.read()
+        set_profile_picture(userid, pfp_name, image)
+    if profile_banner:
+        image = profile_banner.read()
+        set_banner(userid, banner_name, image)
+    return redirect("/profile")
