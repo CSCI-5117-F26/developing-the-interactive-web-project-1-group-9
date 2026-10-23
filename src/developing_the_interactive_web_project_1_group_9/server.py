@@ -4,7 +4,7 @@ from developing_the_interactive_web_project_1_group_9.auth import init_auth0
 from dotenv import load_dotenv
 from database import *
 
-# import psycopg
+import psycopg
 import os
 
 app = Flask(__name__)
