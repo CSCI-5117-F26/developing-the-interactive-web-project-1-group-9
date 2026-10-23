@@ -97,6 +97,7 @@ async def feed():
     auth0 = init_auth0()
     store_options = {"request": request}
     user = await auth0.get_user(store_options)
+    print(user)
     if not user:
         return redirect(url_for('login'))
     # fetch profile info from db using auth0 id
