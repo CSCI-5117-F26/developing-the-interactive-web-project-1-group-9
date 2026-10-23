@@ -11,7 +11,7 @@ import os
 
 #user management
 def create_user(auth_id, username, email):
-    conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
+    conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO users (auth_id, username, email) VALUES (%s, %s, %s) RETURNING id;""", (auth_id, username, email))
@@ -22,7 +22,7 @@ def create_user(auth_id, username, email):
     return user_id
 
 def set_bio(userid, bio):
-    conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
+    conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute("""UPDATE users SET bio = %s WHERE id = %s;""", (bio, userid))
     conn.commit()
@@ -30,7 +30,7 @@ def set_bio(userid, bio):
     conn.close()
 
 def set_profile_picture(userid, filename, image):
-    conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
+    conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO pfps (user_id, file_name, image_data)
@@ -45,7 +45,7 @@ def set_profile_picture(userid, filename, image):
     conn.close()
 
 def set_banner(userid, filename, image):
-    conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
+    conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO banners (user_id, file_name, image_data)
@@ -60,7 +60,7 @@ def set_banner(userid, filename, image):
     conn.close()
 
 def get_user(userid):
-    conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
+    conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute("""SELECT username, email, bio FROM users WHERE id = %s;""", (userid,))
     user = cur.fetchone()
@@ -75,7 +75,7 @@ def get_user(userid):
     }
 
 def get_profile_picture(userid):
-    conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
+    conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute("""SELECT image_data FROM pfps WHERE user_id = %s;""", (userid,))
     pfp = cur.fetchone()
@@ -84,7 +84,7 @@ def get_profile_picture(userid):
     return pfp
 
 def get_banner(userid):
-    conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
+    conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute("""SELECT image_data FROM banners WHERE user_id = %s;""", (userid,))
     banner = cur.fetchone()
@@ -93,7 +93,7 @@ def get_banner(userid):
     return banner
 
 def make_admin(userid):
-    conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
+    conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute("""UPDATE users SET is_admin = TRUE WHERE id = %s;""", (userid,))
     conn.commit()
@@ -101,7 +101,7 @@ def make_admin(userid):
     conn.close()
 
 def is_admin(userid):
-    conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
+    conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute("""SELECT is_admin FROM users WHERE id = %s;""", (userid,))
     result = cur.fetchone()
@@ -112,7 +112,7 @@ def is_admin(userid):
     return False
 
 def get_user_id(username):
-    conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
+    conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute("""SELECT id FROM users WHERE username = %s;""", (username,))
     result = cur.fetchone()
@@ -123,10 +123,7 @@ def get_user_id(username):
     return False
 
 def get_user_by_auth0(auth0_id):
-    print("DB_HOST =", os.getenv("DB_HOST")) # debug since connection isnt working
-    print("DB_DATABASE =", os.getenv("DB_DATABASE"))
-    print("DB_USER =", os.getenv("DB_USER"))
-    conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
+    conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute("SELECT id FROM users WHERE auth_id = %s;", (auth0_id,))
     result = cur.fetchone()
@@ -138,7 +135,7 @@ def get_user_by_auth0(auth0_id):
 
 #post management
 def create_post(userid, title, content):
-    conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
+    conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute("""INSERT INTO posts (user_id, title, content) VALUES (%s, %s, %s) RETURNING id;""", (userid, title, content))
     post_id = cur.fetchone()[0]
@@ -148,7 +145,7 @@ def create_post(userid, title, content):
     return post_id
 
 def get_post(postid):
-    conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
+    conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute("""SELECT * FROM posts WHERE id = %s; """, (postid,))
     post = cur.fetchone()
@@ -158,7 +155,7 @@ def get_post(postid):
     return post
 
 def edit_post(postid, title, content):
-    conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
+    conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute("""UPDATE posts SET title = %s, content = %s, last_updated = CURRENT_TIMESTAMP WHERE id = %s;""", (title, content, postid))
     conn.commit()
@@ -167,7 +164,7 @@ def edit_post(postid, title, content):
 
 #comment management
 def create_comment(userid, postid, content):
-    conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
+    conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute("""INSERT INTO comments (user_id, post_id, content) VALUES (%s, %s, %s) RETURNING id;""", (userid, postid, content))
     comment_id = cur.fetchone()[0]
