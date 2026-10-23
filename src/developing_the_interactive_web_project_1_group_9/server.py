@@ -52,6 +52,7 @@ async def callback():
     store_options = {"request": request, "response": response}
     try:
         result = await auth0.complete_interactive_login(str(request.url), store_options)
+        print ("result: ", result)
         response.status_code = 302
         response.headers["Location"] = url_for('feed')
         user = await auth0.get_user(store_options)
