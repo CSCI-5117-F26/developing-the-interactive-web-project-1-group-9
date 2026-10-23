@@ -52,9 +52,10 @@ async def callback():
     try:
         result = await auth0.complete_interactive_login(str(request.url), store_options)
         user = await auth0.get_user(store_options)
-        auth0_id = user["sub"]
+
+        auth0_id = user["user_id"]
         email = user["email"]
-        username = user.get("nickname", email.split("@")[0])
+        username = user.get("username", email.split("@")[0]) # if no username just use email
         userid = get_user_by_auth0(auth0_id)
         if userid is None:
             create_user(auth0_id, username, email)
@@ -97,9 +98,12 @@ async def feed():
     user = await auth0.get_user(store_options)
     if not user:
         return redirect(url_for('login'))
-    
-    # Logic to get profile info
-    return render_template("profile.html")
+    # fetch profile info from db using auth0 id
+    userid = get_user_by_auth0(user["user_id"])
+    user_data = get_user(userid)
+    user_data["pfp"] = f"/pfp/{userid}" # append pfp and banner photos to user data object for simplicity
+    user_data["banner"] = f"/banner/{userid}"
+    return render_template("profile.html", user=user_data)
 
 @app.route("/profile/edit", methods=["POST"])
 async def update_profile():
@@ -108,18 +112,38 @@ async def update_profile():
     user = await auth0.get_user(store_options)
     if not user:
         return redirect(url_for('login'))
-    userid = get_user_id_by_auth0(user["sub"])
+    
+    userid = get_user_by_auth0(user["user_id"])
     bio = request.form.get("bio")
     profile_picture = request.files.get("profile_picture")
-    pfp_name = profile_picture.filename
     profile_banner = request.files.get("profile_banner")
-    banner_name = profile_banner.filename
+
     if bio:
         set_bio(userid, bio)
-    if profile_picture:
-        image = profile_picture.read()
-        set_profile_picture(userid, pfp_name, image)
-    if profile_banner:
-        image = profile_banner.read()
-        set_banner(userid, banner_name, image)
+
+    if profile_picture and profile_picture.filename:
+        pfp_name = profile_picture.filename
+        pfp = profile_picture.read()
+        set_profile_picture(userid, pfp_name, pfp)
+
+    if profile_banner and profile_banner.filename:
+        banner_name = profile_banner.filename
+        banner = profile_banner.read()
+        set_banner(userid, banner_name, banner)
+
     return redirect("/profile")
+
+# trying with just jpeg for now for simplicity
+@app.route("/pfp/<int:userid>")
+def pfp(userid):
+    image = get_profile_picture(userid)
+    if not image:
+        return "", 404
+    return Response(image[0], mimetype="image/jpeg")
+
+@app.route("/banner/<int:userid>")
+def banner(userid):
+    image = get_banner(userid)
+    if not image:
+        return "", 404
+    return Response(image[0], mimetype="image/jpeg")

@@ -37,6 +37,7 @@ def set_profile_picture(userid, filename, image):
         VALUES (%s, %s, %s)
         ON CONFLICT (user_id)
         DO UPDATE SET
+        file_name = EXCLUDED.file_name,
         image_data = EXCLUDED.image_data;
     """, (userid, filename, psycopg.Binary(image)))
     conn.commit()
@@ -51,11 +52,27 @@ def set_banner(userid, filename, image):
         VALUES (%s, %s, %s)
         ON CONFLICT (user_id)
         DO UPDATE SET
+        file_name = EXCLUDED.file_name,
         image_data = EXCLUDED.image_data;
     """, (userid, filename, psycopg.Binary(image)))
     conn.commit()
     cur.close()
     conn.close()
+
+def get_user(userid):
+    conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
+    cur = conn.cursor()
+    cur.execute("""SELECT username, email, bio FROM users WHERE id = %s;""", (userid,))
+    user = cur.fetchone()
+    cur.close()
+    conn.close()
+    if not user:
+        return None
+    return {
+        "username": user[0],
+        "email": user[1],
+        "bio": user[2]
+    }
 
 def get_profile_picture(userid):
     conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
@@ -108,13 +125,13 @@ def get_user_id(username):
 def get_user_by_auth0(auth0_id):
     conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
     cur = conn.cursor()
-    cur.execute("SELECT id FROM users WHERE auth0_id = %s;", (auth0_id,))
+    cur.execute("SELECT id FROM users WHERE auth_id = %s;", (auth0_id,))
     result = cur.fetchone()
     cur.close()
     conn.close()
     if result:
             return result[0]
-    return False
+    return None
 
 #post management
 def create_post(userid, title, content):
