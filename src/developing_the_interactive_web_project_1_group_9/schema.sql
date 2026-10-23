@@ -1,9 +1,10 @@
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
+    auth_id TEXT UNIQUE NOT NULL,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    user_password TEXT NOT NULL,
+    -- user_password TEXT NOT NULL, --managed by auth0
     bio TEXT,
     is_admin BOOLEAN DEFAULT FALSE NOT NULL,
     user_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP

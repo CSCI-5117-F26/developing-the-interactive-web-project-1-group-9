@@ -10,11 +10,11 @@ import os
 # create_comment
 
 #user management
-def create_user(username, email, password):
+def create_user(auth_id, username, email):
     conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO users (username, email, user_password) VALUES (%s, %s, %s) RETURNING id;""", (username, email, password))
+        INSERT INTO users (auth_id, username, email) VALUES (%s, %s, %s) RETURNING id;""", (auth_id, username, email))
     user_id = cur.fetchone()[0] # should only fetch id of current user
     conn.commit()
     cur.close()
@@ -34,7 +34,7 @@ def set_profile_picture(userid, filename, image):
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO pfps (user_id, file_name, image_data)
-        VALUES (%s, %s)
+        VALUES (%s, %s, %s)
         ON CONFLICT (user_id)
         DO UPDATE SET
         image_data = EXCLUDED.image_data;
@@ -48,7 +48,7 @@ def set_banner(userid, filename, image):
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO banners (user_id, file_name, image_data)
-        VALUES (%s, %s)
+        VALUES (%s, %s, %s)
         ON CONFLICT (user_id)
         DO UPDATE SET
         image_data = EXCLUDED.image_data;
@@ -105,6 +105,17 @@ def get_user_id(username):
         return result[0]
     return False
 
+def get_user_by_auth0(auth0_id):
+    conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM users WHERE auth0_id = %s;", (auth0_id,))
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    if result:
+            return result[0]
+    return False
+
 #post management
 def create_post(userid, title, content):
     conn = psycopg.connect(host=os.getenv("DB_HOST"), database=os.getenv("DB_DATABASE"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"))
@@ -141,7 +152,7 @@ def create_comment(userid, postid, content):
     cur.execute("""INSERT INTO comments (user_id, post_id, content) VALUES (%s, %s, %s) RETURNING id;""", (userid, postid, content))
     comment_id = cur.fetchone()[0]
     #need to update count of comments for post comment is under
-    cur.execute("""UPDATE posts SET comment_count = comment_count + 1 WHERE id = %s""", (postid))
+    cur.execute("""UPDATE posts SET comment_count = comment_count + 1 WHERE id = %s""", (postid,))
     conn.commit()
     cur.close()
     conn.close()
