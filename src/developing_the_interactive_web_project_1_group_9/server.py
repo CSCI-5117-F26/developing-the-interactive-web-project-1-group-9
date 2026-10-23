@@ -40,6 +40,7 @@ async def login():
     authorization_url = await auth0.start_interactive_login({}, store_options)
     response.status_code = 302
     response.headers["Location"] = authorization_url
+    print("signup")
     return response
 
 
