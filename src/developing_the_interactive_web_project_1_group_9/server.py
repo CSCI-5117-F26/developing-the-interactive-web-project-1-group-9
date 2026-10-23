@@ -4,7 +4,7 @@ from developing_the_interactive_web_project_1_group_9.auth import init_auth0
 from dotenv import load_dotenv
 from database import *
 
-import psycopg
+# import psycopg
 import os
 
 app = Flask(__name__)
@@ -40,7 +40,6 @@ async def login():
     authorization_url = await auth0.start_interactive_login({}, store_options)
     response.status_code = 302
     response.headers["Location"] = authorization_url
-    print("signup")
     return response
 
 
@@ -52,17 +51,16 @@ async def callback():
     store_options = {"request": request, "response": response}
     try:
         result = await auth0.complete_interactive_login(str(request.url), store_options)
-        print ("result: ", result)
-        response.status_code = 302
-        response.headers["Location"] = url_for('feed')
-        user = await auth0.get_user(store_options)
-        print("user: ", user)
+        user = result["state_data"]["user"]
+
         auth0_id = user["sub"]
         email = user["email"]
         username = user.get("username", email.split("@")[0]) # if no username just use email
         userid = get_user_by_auth0(auth0_id)
         if userid is None:
             create_user(auth0_id, username, email)
+        response.status_code = 302
+        response.headers["Location"] = url_for('feed')
         return response
     except Exception as e:
         return f"Authentication error: {str(e)}", 400
@@ -98,7 +96,6 @@ async def feed():
     auth0 = init_auth0()
     store_options = {"request": request}
     user = await auth0.get_user(store_options)
-    print(user)
     if not user:
         return redirect(url_for('login'))
     # fetch profile info from db using auth0 id
