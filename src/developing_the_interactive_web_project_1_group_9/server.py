@@ -53,7 +53,7 @@ async def callback():
         result = await auth0.complete_interactive_login(str(request.url), store_options)
         user = await auth0.get_user(store_options)
 
-        auth0_id = user["user_id"]
+        auth0_id = user["sub"]
         email = user["email"]
         username = user.get("username", email.split("@")[0]) # if no username just use email
         userid = get_user_by_auth0(auth0_id)
@@ -99,7 +99,7 @@ async def feed():
     if not user:
         return redirect(url_for('login'))
     # fetch profile info from db using auth0 id
-    userid = get_user_by_auth0(user["user_id"])
+    userid = get_user_by_auth0(user["sub"])
     user_data = get_user(userid)
     user_data["pfp"] = f"/pfp/{userid}" # append pfp and banner photos to user data object for simplicity
     user_data["banner"] = f"/banner/{userid}"
@@ -113,7 +113,7 @@ async def update_profile():
     if not user:
         return redirect(url_for('login'))
     
-    userid = get_user_by_auth0(user["user_id"])
+    userid = get_user_by_auth0(user["sub"])
     bio = request.form.get("bio")
     profile_picture = request.files.get("profile_picture")
     profile_banner = request.files.get("profile_banner")
