@@ -62,17 +62,35 @@ def set_banner(userid, filename, image):
 def get_user(userid):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
-    cur.execute("""SELECT username, email, bio FROM users WHERE id = %s;""", (userid,))
+    cur.execute("""SELECT id, username, email, bio FROM users WHERE id = %s;""", (userid,))
     user = cur.fetchone()
     cur.close()
     conn.close()
     if not user:
         return None
     return {
-        "username": user[0],
-        "email": user[1],
-        "bio": user[2]
+        "id": user[0],
+        "username": user[1],
+        "email": user[2],
+        "bio": user[3]
     }
+
+def get_user_by_username(username):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""SELECT id, username, email, bio FROM users WHERE username = %s;""", (username,))
+    user = cur.fetchone()
+    cur.close()
+    conn.close()
+    if not user:
+        return None
+    return {
+        "id": user[0],
+        "username": user[1],
+        "email": user[2],
+        "bio": user[3]
+    }
+
 
 def get_profile_picture(userid):
     conn = psycopg.connect(os.environ["DB_URL"])

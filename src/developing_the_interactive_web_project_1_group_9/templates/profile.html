@@ -20,7 +20,7 @@
 
             <div class="profile-info">
                 <div class="avatar">
-                    <img src="{{user.pfp}}" alt="John Doe">
+                    <img src="{{user.pfp}}" alt="Profile Picture">
                 </div>
 
                 <div class="profile-details">
@@ -61,10 +61,10 @@
             <p></p>
 
             <div class="profile-stats">
+                {% if is_owner %}
                 <button command="show-modal" commandfor="edit-profile" class="btn btn-block" data-show="owner">
                     Edit Profile
                 </button>
-
                 <!-- Dialog to show edit profile -->
                 <dialog id="edit-profile" class="profile-dialog">
                     <form action="/profile/edit" method="POST" enctype="multipart/form-data">
@@ -80,10 +80,13 @@
                     </form>
                     <button commandfor="edit-profile" command="close">Close</button>
                 </dialog>
+                {% endif %}
 
+                {% if is_owner == False %} <!-- user can't follow themself -->
                 <button class="btn btn-primary btn-block" data-show="other">
                     Follow
                 </button>
+                {% endif %}
 
                 <a href="/signin" class="btn btn-block" data-show="guest">
                     Log in to follow
@@ -91,9 +94,11 @@
 
                 <p></p>
 
+                {% if is_owner %} <!-- only really wanna show this logout button to owner -->
                 <a href="/logout" class="btn btn-block" data-show="owner">
                     Log out
                 </a>
+                {% endif %}
             </div>
 
            
@@ -103,8 +108,7 @@
         <!-- RIGHT -->
         <main class="pure-u-1 pure-u-md-3-4">
             <div class="banner">
-                <img src="{{user.banner}}" alt="John Doe"
-                    >
+                <img src="{{user.banner}}" alt="Banner">
             </div>
 
             <hr>
