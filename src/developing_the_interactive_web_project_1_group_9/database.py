@@ -74,6 +74,22 @@ def get_user(userid):
         "bio": user[2]
     }
 
+def get_user_by_username(username):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""SELECT id, email, bio FROM users WHERE username = %s;""", (username,))
+    user = cur.fetchone()
+    cur.close()
+    conn.close()
+    if not user:
+        return None
+    return {
+        "id": user[0],
+        "email": user[1],
+        "bio": user[2]
+    }
+
+
 def get_profile_picture(userid):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()

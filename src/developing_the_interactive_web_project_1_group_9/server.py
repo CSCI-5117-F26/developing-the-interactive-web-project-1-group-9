@@ -89,21 +89,50 @@ async def feeds():
     # Whatever logic we use to personalize feed to user goes here
     return render_template("feeds.html")
 
-# I'm assuming /profile is personal profile, and there's different route
-# For looking at other people's profile?
+# @app.route("/profile")
+# async def feed():
+#     auth0 = init_auth0()
+#     store_options = {"request": request}
+#     user = await auth0.get_user(store_options)
+#     if not user:
+#         return redirect(url_for('login'))
+#     # fetch profile info from db using auth0 id
+#     userid = get_user_by_auth0(user["sub"])
+#     user_data = get_user(userid)
+#     user_data["pfp"] = f"/pfp/{userid}" # append pfp and banner photos to user data object for simplicity
+#     user_data["banner"] = f"/banner/{userid}"
+#     return render_template("profile.html", user=user_data)
+
+# default route /profile path, redirects to /profile/<username> passing current auth0 user's db username
 @app.route("/profile")
-async def feed():
+async def profile():
     auth0 = init_auth0()
     store_options = {"request": request}
     user = await auth0.get_user(store_options)
     if not user:
-        return redirect(url_for('login'))
-    # fetch profile info from db using auth0 id
+        return redirect(url_for("login"))
     userid = get_user_by_auth0(user["sub"])
     user_data = get_user(userid)
-    user_data["pfp"] = f"/pfp/{userid}" # append pfp and banner photos to user data object for simplicity
-    user_data["banner"] = f"/banner/{userid}"
-    return render_template("profile.html", user=user_data)
+    return redirect(f"/profile/{user_data['username']}")
+
+# profile display route used to display own (sets is_owner true) or other's profiles
+@app.route("/profile/<username>")
+async def user_profile(username):
+    auth0 = init_auth0()
+    store_options = {"request": request}
+    current_user = await auth0.get_user(store_options) # current auth0 user
+    user = get_user_by_username(username) # user from username passed through route
+    if not user:
+        return "User not found", 404
+    user["pfp"] = f"/pfp/{user['userid']}"
+    user["banner"] = f"/banner/{user['userid']}"
+    is_owner = False
+    if current_user:
+        current_user_id = get_user_by_auth0(current_user["sub"]) # if user viewing own profile enable editing and such (TODO)
+        if current_user_id == user["userid"]:
+            is_owner = True
+
+    return render_template("profile.html", user=user, is_owner=is_owner)
 
 @app.route("/profile/edit", methods=["POST"])
 async def update_profile():
