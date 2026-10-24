@@ -131,7 +131,7 @@ async def user_profile(username):
         current_user_id = get_user_by_auth0(current_user["sub"]) # if user viewing own profile enable editing and such (TODO)
         if current_user_id == user["id"]:
             is_owner = True
-
+    print(is_owner)
     return render_template("profile.html", user=user, is_owner=is_owner)
 
 @app.route("/profile/edit", methods=["POST"])
