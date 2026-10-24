@@ -60,7 +60,7 @@ async def callback():
         if userid is None:
             create_user(auth0_id, username, email)
         response.status_code = 302
-        response.headers["Location"] = url_for('feed')
+        response.headers["Location"] = url_for('feeds')
         return response
     except Exception as e:
         return f"Authentication error: {str(e)}", 400
