@@ -82,7 +82,7 @@
                 </dialog>
                 {% endif %}
 
-                {% if not is_owner %} <!-- user can't follow themself -->
+                {% if is_owner == False %} <!-- user can't follow themself -->
                 <button class="btn btn-primary btn-block" data-show="other">
                     Follow
                 </button>
@@ -94,9 +94,11 @@
 
                 <p></p>
 
+                {% if is_owner %} <!-- only really wanna show this logout button to owner -->
                 <a href="/logout" class="btn btn-block" data-show="owner">
                     Log out
                 </a>
+                {% endif %}
             </div>
 
            
