@@ -60,7 +60,7 @@ async def callback():
         if userid is None:
             create_user(auth0_id, username, email)
         response.status_code = 302
-        response.headers["Location"] = url_for('feeds')
+        response.headers["Location"] = url_for('profile')
         return response
     except Exception as e:
         return f"Authentication error: {str(e)}", 400
@@ -124,12 +124,12 @@ async def user_profile(username):
     user = get_user_by_username(username) # user from username passed through route
     if not user:
         return "User not found", 404
-    user["pfp"] = f"/pfp/{user['userid']}"
-    user["banner"] = f"/banner/{user['userid']}"
+    user["pfp"] = f"/pfp/{user['id']}"
+    user["banner"] = f"/banner/{user['id']}"
     is_owner = False
     if current_user:
         current_user_id = get_user_by_auth0(current_user["sub"]) # if user viewing own profile enable editing and such (TODO)
-        if current_user_id == user["userid"]:
+        if current_user_id == user["id"]:
             is_owner = True
 
     return render_template("profile.html", user=user, is_owner=is_owner)
