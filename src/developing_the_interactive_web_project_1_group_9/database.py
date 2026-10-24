@@ -69,9 +69,10 @@ def get_user(userid):
     if not user:
         return None
     return {
-        "username": user[0],
-        "email": user[1],
-        "bio": user[2]
+        "id": user[0],
+        "username": user[1],
+        "email": user[2],
+        "bio": user[3]
     }
 
 def get_user_by_username(username):
@@ -85,8 +86,9 @@ def get_user_by_username(username):
         return None
     return {
         "id": user[0],
-        "email": user[1],
-        "bio": user[2]
+        "username": user[1],
+        "email": user[2],
+        "bio": user[3]
     }
 
 
