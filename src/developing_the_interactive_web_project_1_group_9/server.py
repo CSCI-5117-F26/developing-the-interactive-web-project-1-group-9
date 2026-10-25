@@ -120,8 +120,8 @@ async def user_profile(username):
         current_user_id = get_user_by_auth0(current_user["sub"])
         if current_user_id == user["id"]:
             is_owner = True
-    
-    return render_template("profile.html", user=user, is_owner=is_owner)
+    posts = get_posts_by_id(user["id"])
+    return render_template("profile.html", user=user, is_owner=is_owner, posts=posts)
 
 @app.route("/profile/edit", methods=["POST"])
 async def update_profile():

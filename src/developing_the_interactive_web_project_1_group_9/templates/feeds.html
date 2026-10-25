@@ -33,45 +33,45 @@
             <article class="card post">
             
                 <!-- Author -->
-                <div class="post-header">
-            
-                    <div class="post-author">
-            
-                        <a href="{{ url_for('user_profile', username=post.username) }}">
-                            <img src={{post.pfp}} alt="John Doe"
-                                class="post-avatar">
-                        </a>
-            
-                        <div>
-                            <strong>@{{ post.username }}</strong>
-                            <time datetime="2026-10-17">{{post.time_created}}</time>
-                        </div>
-            
-                    </div>
-            
-                    <a href="#" class="btn">Follow</a>
-            
-                </div>
-            
-                <!-- Post content -->
-                <p class="post-body">
-                    {{ post.content }}
-                </p>
-            
-                <span class="happiness">🌦️ Great</span>
-            
-                <!-- Interactions -->
-                <div class="post-actions">
-            
-                    <button type="button" class="post-action" >
-                        {{post.likes}} Happiness
-                    </button>
-            
-                    <a class="post-action" href="{{ url_for('post_page', post_id=post.post_id) }}">
-                      {{post.comment_count}} Comments
-                    </a>
-            
-                </div>
+                  <div class="post-header">
+              
+                      <div class="post-author">
+              
+                          <a href="{{ url_for('user_profile', username=post.username) }}">
+                              <img src={{post.pfp}} alt="John Doe"
+                                  class="post-avatar">
+                          </a>
+              
+                          <div>
+                              <strong>@{{ post.username }}</strong>
+                              <time datetime="2026-10-17">{{post.time_created}}</time>
+                          </div>
+              
+                      </div>
+              
+                      <a href="#" class="btn">Follow</a>
+              
+                  </div>
+              
+                  <!-- Post content -->
+                  <p class="post-body">
+                      {{ post.content }}
+                  </p>
+              
+                  <span class="happiness">🌦️ Great</span>
+              
+                  <!-- Interactions -->
+                  <div class="post-actions">
+              
+                      <button type="button" class="post-action" >
+                          {{post.likes}} Happiness
+                      </button>
+              
+                      <a class="post-action" href="{{ url_for('post_page', post_id=post.post_id) }}">
+                        {{post.comment_count}} Comments
+                      </a>
+              
+                  </div>
             
             </article>
 

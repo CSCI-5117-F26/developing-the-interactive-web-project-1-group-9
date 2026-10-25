@@ -251,6 +251,35 @@ def get_posts_with_usernames():
       for post in posts
     ]
 
+def get_posts_by_id(userid):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute(
+      """
+      SELECT
+        posts.id,
+        posts.content,
+        posts.likes_count,
+        posts.comment_count,
+        posts.post_created,
+        posts.user_id
+      FROM posts
+      WHERE posts.user_id = %s;""", (userid,)
+    )
+    posts = cur.fetchall()
+    if not posts:
+      return None
+    return [
+        {
+          "post_id": post[0],
+          "content": post[1],
+          "likes": post[2],
+          "comment_count": post[3],
+          "time_created": post[4].strftime("%m/%d/%y"),
+          "pfp": f"/pfp/{post[5]}"
+      }
+      for post in posts
+    ]
 
 
 
