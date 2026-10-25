@@ -37,14 +37,14 @@
             
                     <div class="post-author">
             
-                        <a href="/profile">
-                            <img src="https://www.looper.com/img/gallery/the-untold-truth-of-bruce-wayne/bruce-wayne-is-actually-batmans-mask-1638569177.jpg" alt="John Doe"
+                        <a href="{{ url_for('user_profile', username=post.username) }}">
+                            <img src={{post.pfp}} alt="John Doe"
                                 class="post-avatar">
                         </a>
             
                         <div>
-                            <strong>@{{ post[2] }}</strong>
-                            <time datetime="2026-10-17">{{post[5]}}</time>
+                            <strong>@{{ post.username }}</strong>
+                            <time datetime="2026-10-17">{{post.time_created}}</time>
                         </div>
             
                     </div>
@@ -55,7 +55,7 @@
             
                 <!-- Post content -->
                 <p class="post-body">
-                    {{ post[1] }}
+                    {{ post.content }}
                 </p>
             
                 <span class="happiness">🌦️ Great</span>
@@ -64,11 +64,11 @@
                 <div class="post-actions">
             
                     <button type="button" class="post-action" >
-                        {{post[3]}} Happiness
+                        {{post.likes}} Happiness
                     </button>
             
-                    <a class="post-action" href="{{ url_for('post_page', post_id=post[0]) }}">
-                      {{post[4]}} Comments
+                    <a class="post-action" href="{{ url_for('post_page', post_id=post.post_id) }}">
+                      {{post.comment_count}} Comments
                     </a>
             
                 </div>
@@ -84,10 +84,6 @@
 
 </div>
 
-<script>
-  function increaseHappiness() {
 
-  }
-</script>
 
 {% endblock %}

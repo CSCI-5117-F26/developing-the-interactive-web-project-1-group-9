@@ -7,13 +7,13 @@
       <!-- Author -->
       <div class="post-header">
           <div class="post-author">
-              <a href="/profile">
-                  <img src="https://www.looper.com/img/gallery/the-untold-truth-of-bruce-wayne/bruce-wayne-is-actually-batmans-mask-1638569177.jpg" alt="Avatar" class="post-avatar">
+              <a href="{{ url_for('user_profile', username=post.username) }}">
+                  <img src="{{post.pfp}}" alt="Avatar" class="post-avatar">
               </a>
               <div>
                   <!-- Uses 'post' matching the key from render_template -->
-                  <strong>@{{ post[4] }}</strong>
-                  <time datetime="2026-10-17">{{ post[5]}}</time>
+                  <strong>@{{ post.username }}</strong>
+                  <time datetime="2026-10-17">{{ post.time_created}}</time>
               </div>
           </div>
           <a href="#" class="btn">Follow</a>
@@ -21,7 +21,7 @@
 
       <!-- Post content -->
       <p class="post-body">
-          {{ post[2] }}
+          {{ post.content }}
       </p>
 
       <span class="happiness">🌦️ Great</span>
@@ -29,7 +29,7 @@
       <!-- Interactions -->
       <div class="post-actions">
           <button type="button" class="post-action">
-              ♡ 24 Happiness
+              {{post.likes }} Happiness
           </button>
       </div>
     </article>
@@ -51,9 +51,10 @@
     </section>
             
       <h3>Comments</h3>
-      {% if comments == [] %}
+      {% if comments == None %}
         <h3> No Comments</h3>
-      {% endif %}
+      {% else %}
+      
       {% for comment in comments %}
       <article class="card post">
       
@@ -62,14 +63,14 @@
       
               <div class="post-author">
       
-                  <a href="/profile">
-                      <img src="https://www.looper.com/img/gallery/the-untold-truth-of-bruce-wayne/bruce-wayne-is-actually-batmans-mask-1638569177.jpg" alt="John Doe"
+                  <a href="{{ url_for('user_profile', username=comment.username) }}">
+                      <img src="{{comment.pfp}}" alt="John Doe"
                           class="post-avatar">
                   </a>
       
                   <div>
-                      <strong>@{{ comment[2] }}</strong>
-                      <time datetime="2026-10-17">Oct 17, 2026</time>
+                      <strong>@{{ comment.username }}</strong>
+                      <time datetime="2026-10-17">{{comment.time_created}}</time>
                   </div>
       
               </div>
@@ -80,7 +81,7 @@
       
           <!-- Post content -->
           <p class="post-body">
-              {{ comment[1] }}
+              {{ comment.content }}
           </p>
       
           <span class="happiness">🌦️ Great</span>
@@ -89,12 +90,13 @@
           <div class="post-actions">
       
               <button type="button" class="post-action" >
-                  ♡ 24 Happiness
+                  {{comment.likes}} Happiness
               </button>  
           </div>
       
       </article>
     {% endfor %}
+    {% endif %}
   </section>
 </div>
 {% endblock %}

@@ -1,9 +1,25 @@
+DROP TABLE IF EXISTS auth_transactions CASCADE;
+DROP TABLE IF EXISTS auth_sessions CASCADE;
+DROP TABLE IF EXISTS banners CASCADE;
+DROP TABLE IF EXISTS pfps CASCADE;
+DROP TABLE IF EXISTS post_reports CASCADE;
+DROP TABLE IF EXISTS comment_double_likes CASCADE;
+DROP TABLE IF EXISTS comment_likes CASCADE;
+DROP TABLE IF EXISTS double_likes CASCADE;
+DROP TABLE IF EXISTS likes CASCADE;
+DROP TABLE IF EXISTS comments CASCADE;
+DROP TABLE IF EXISTS follows CASCADE;
+DROP TABLE IF EXISTS posts CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
+    auth_id TEXT UNIQUE NOT NULL,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    user_password TEXT NOT NULL,
+    nickname VARCHAR(50),
+    follower_count INTEGER NOT NULL DEFAULT 0,
+    following_count INTEGER NOT NULL DEFAULT 0;
     bio TEXT,
     is_admin BOOLEAN DEFAULT FALSE NOT NULL,
     user_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -87,3 +103,20 @@ CREATE TABLE banners (
     file_name TEXT NOT NULL,
     image_data BYTEA NOT NULL 
 );
+
+--auth0
+CREATE TABLE auth_sessions (
+    session_id VARCHAR(255) NOT NULL PRIMARY KEY,
+    session_data BYTEA NOT NULL,                  -- Use JSONB for PostgreSQL, JSON for MySQL
+    expire TIMESTAMP(6) NULL
+);
+
+CREATE TABLE auth_transactions (
+    transaction_id VARCHAR(22) NOT NULL PRIMARY KEY,
+    transaction_data BYTEA NOT NULL,                  -- Use JSONB for PostgreSQL, JSON for MySQL
+    expire TIMESTAMP(6) NULL
+);
+
+-- Crucial for performance: index the expiration column so your cleanup script runs efficiently
+-- Allegedy crucial... Cleanup scripts not implemented yet
+-- CREATE INDEX idx_sessions_expire ON auth_sessions (expire);

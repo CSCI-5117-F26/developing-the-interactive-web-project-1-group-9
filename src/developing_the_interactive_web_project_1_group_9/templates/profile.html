@@ -6,12 +6,6 @@
 
 <div class="page profile" data-view="owner">
 
-    <header class="topbar">
-        <a href="/feeds" class="btn btn-primary">Main feed</a>
-        <form class="pure-form" role="search">
-            <input class="search" type="search" placeholder="Search people and posts">
-        </form>
-    </header>
 
     <div class="pure-g">
 
@@ -20,16 +14,16 @@
 
             <div class="profile-info">
                 <div class="avatar">
-                    <img src="https://s3.amazonaws.com/comicgeeks/characters/avatars/22065.jpg?t=1756153029" alt="John Doe">
+                    <img src="{{user.pfp}}" alt="Profile Picture">
                 </div>
 
                 <div class="profile-details">
-                    <h1 class="name">Barry Allan</h1>
-                    <p class="handle">@jdoe</p>
+                    <h1 class="name">{{ user.nickname }}</h1>
+                    <p class="handle">@{{ user.username }}</p>
 
                     <div class="profile-bio">
                         <h4>Bio</h4>
-                        <p>Here to post the small things that make me happy.</p>
+                        <p>{{user.bio}}</p>
                     </div>
                 </div>
             </div>
@@ -38,7 +32,7 @@
                 <!-- Button and Dialog to show following -->
                 <button command="show-modal" commandfor="user-following" class="btn btn-block stat">
                     <span>Following</span>
-                    <strong>182</strong>
+                    <strong> {{ user.following_count }}</strong>
                 </button>
             
                 <dialog id="user-following" class="profile-dialog">
@@ -49,7 +43,7 @@
                 <!-- Button and Dialog to show followers -->
                 <button command="show-modal" commandfor="user-followers" class="btn btn-block stat">
                     <span>Followers</span>
-                    <strong>1,204</strong>
+                    <strong> {{ user.follower_count }}</strong>
                 </button>
             
                 <dialog id="user-followers" class="profile-dialog">
@@ -61,19 +55,34 @@
             <p></p>
 
             <div class="profile-stats">
+                {% if is_owner %}
                 <button command="show-modal" commandfor="edit-profile" class="btn btn-block" data-show="owner">
                     Edit Profile
                 </button>
-
                 <!-- Dialog to show edit profile -->
                 <dialog id="edit-profile" class="profile-dialog">
-                    <p>This is where people edit their profile</p>
+                    <form action="/profile/edit" method="POST" enctype="multipart/form-data">
+                       <input type="text" name="nickname" maxlength="50">
+                        <br>
+                        <label>Bio</label>
+                        <textarea name="bio"></textarea>
+                        <br>
+                        <label>Profile Picture</label>
+                        <input type="file" name="profile_picture" accept="image">
+                        <br>
+                        <label>Profile Banner</label>
+                        <input type="file" name="profile_banner" accept="image">
+                        <button type="submit" class="btn btn-block">Save Changes</button>
+                    </form>
                     <button commandfor="edit-profile" command="close">Close</button>
                 </dialog>
+                {% endif %}
 
-                <button class="btn btn-primary btn-block" data-show="other">
+                {% if is_owner == False %} <!-- user can't follow themself -->
+                <button class="btn btn-primary btn-block">
                     Follow
                 </button>
+                {% endif %}
 
                 <a href="/signin" class="btn btn-block" data-show="guest">
                     Log in to follow
@@ -81,9 +90,11 @@
 
                 <p></p>
 
-                <a href="/signin" class="btn btn-block" data-show="owner">
+                {% if is_owner %} <!-- only really wanna show this logout button to owner -->
+                <a href="/logout" class="btn btn-block">
                     Log out
                 </a>
+                {% endif %}
             </div>
 
            
@@ -93,8 +104,7 @@
         <!-- RIGHT -->
         <main class="pure-u-1 pure-u-md-3-4">
             <div class="banner">
-                <img src="https://media.desenio.com/site_images/68631c017d2ae084e18280d5_1521787322_WB0043-5.jpg" alt="John Doe"
-                    >
+                <img src="{{user.banner}}" alt="Banner">
             </div>
 
             <hr>
