@@ -14,12 +14,20 @@ def create_user(auth_id, username, email):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO users (auth_id, username, email) VALUES (%s, %s, %s) RETURNING id;""", (auth_id, username, email))
+        INSERT INTO users (auth_id, username,nickname, email) VALUES (%s, %s, %s, %s) RETURNING id;""", (auth_id, username, username, email))
     user_id = cur.fetchone()[0] # should only fetch id of current user
     conn.commit()
     cur.close()
     conn.close()
     return user_id
+
+def set_nickname(userid, nickname):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""UPDATE users SET nickname = %s WHERE id = %s;""", (nickname, userid))
+    conn.commit()
+    cur.close()
+    conn.close()
 
 def set_bio(userid, bio):
     conn = psycopg.connect(os.environ["DB_URL"])
@@ -62,7 +70,7 @@ def set_banner(userid, filename, image):
 def get_user(userid):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
-    cur.execute("""SELECT id, username, email, bio FROM users WHERE id = %s;""", (userid,))
+    cur.execute("""SELECT id, username, nickname, email, bio, follower_count, following_count FROM users WHERE id = %s;""", (userid,))
     user = cur.fetchone()
     cur.close()
     conn.close()
@@ -71,8 +79,11 @@ def get_user(userid):
     return {
         "id": user[0],
         "username": user[1],
-        "email": user[2],
-        "bio": user[3]
+        "nickname": user[2],
+        "email": user[3],
+        "bio": user[4],
+        "follower_count": user[5],
+        "following_count": user[6]
     }
 
 def get_user_by_username(username):
@@ -87,8 +98,11 @@ def get_user_by_username(username):
     return {
         "id": user[0],
         "username": user[1],
-        "email": user[2],
-        "bio": user[3]
+        "nickname": user[2],
+        "email": user[3],
+        "bio": user[4],
+        "follower_count": user[5],
+        "following_count": user[6]
     }
 
 

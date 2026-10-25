@@ -128,9 +128,10 @@ async def user_profile(username):
     user["banner"] = f"/banner/{user['id']}"
     is_owner = False
     if current_user:
-        current_user_id = get_user_by_auth0(current_user["sub"]) # if user viewing own profile enable editing and such (TODO)
+        current_user_id = get_user_by_auth0(current_user["sub"])
         if current_user_id == user["id"]:
             is_owner = True
+    
     return render_template("profile.html", user=user, is_owner=is_owner)
 
 @app.route("/profile/edit", methods=["POST"])
@@ -142,10 +143,13 @@ async def update_profile():
         return redirect(url_for('login'))
     
     userid = get_user_by_auth0(user["sub"])
+    nickname = request.form.get("nickname")
     bio = request.form.get("bio")
     profile_picture = request.files.get("profile_picture")
     profile_banner = request.files.get("profile_banner")
 
+    if nickname:
+        set_nickname(userid, nickname)
     if bio:
         set_bio(userid, bio)
 
