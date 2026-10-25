@@ -87,10 +87,20 @@
                 </dialog>
                 {% endif %}
 
-                {% if is_owner == False %} <!-- user can't follow themself -->
-                <button class="btn btn-primary btn-block">
-                    Follow
-                </button>
+                {% if not is_owner %}
+                    {% if following %}
+                        <form action="/unfollow/{{ user.username }}" method="POST">
+                            <button type="submit" class="btn btn-block">
+                                Unfollow
+                            </button>
+                        </form>
+                        {% else %}
+                        <form action="/follow/{{ user.username }}" method="POST">
+                            <button type="submit" class="btn btn-primary btn-block">
+                                Follow
+                            </button>
+                        </form>
+                    {% endif %}
                 {% endif %}
 
                 <a href="/signin" class="btn btn-block" data-show="guest">

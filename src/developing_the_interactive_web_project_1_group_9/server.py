@@ -101,8 +101,7 @@ async def search():
     search_type = search_term.startswith('@')
     return render_template("search.html", search_results=search_results, profile=search_type, search_term=search_term)
 
-# I'm assuming /profile is personal profile, and there's different route
-# For looking at other people's profile?
+# default profile call routes to current auth0 users profile
 @app.route("/profile")
 async def feed():
     auth0 = init_auth0()
@@ -127,12 +126,15 @@ async def user_profile(username):
     user["pfp"] = f"/pfp/{user['id']}"
     user["banner"] = f"/banner/{user['id']}"
     is_owner = False
+    following = False
     if current_user:
         current_user_id = get_user_by_auth0(current_user["sub"])
         if current_user_id == user["id"]:
             is_owner = True
+        else:
+            following = is_following(current_user_id, user["id"])
     
-    return render_template("profile.html", user=user, is_owner=is_owner)
+    return render_template("profile.html", user=user, is_owner=is_owner, following=following)
 
 @app.route("/profile/edit", methods=["POST"])
 async def update_profile():
@@ -213,3 +215,31 @@ async def submit_post():
         flash("Your post was not successful")
         
     return redirect(url_for('feeds'))
+
+@app.route("/follow/<username>", methods=["POST"])
+async def follow(username):
+    auth0 = init_auth0()
+    store_options = {"request": request}
+    auth_user = await auth0.get_user(store_options)
+    if not auth_user:
+        return redirect(url_for("login"))
+    follower_id = get_user_by_auth0(auth_user["sub"])
+    following_id = get_user_id(username)
+    if not following_id:
+        return "User not found", 404
+    follow_user(follower_id, following_id)
+    return redirect(f"/profile/{username}")
+
+@app.route("/unfollow/<username>", methods=["POST"])
+async def unfollow(username):
+    auth0 = init_auth0()
+    store_options = {"request": request}
+    auth_user = await auth0.get_user(store_options)
+    if not auth_user:
+        return redirect(url_for("login"))
+    follower_id = get_user_by_auth0(auth_user["sub"])
+    following_id = get_user_id(username)
+    if not following_id:
+        return "User not found", 404
+    unfollow_user(follower_id, following_id)
+    return redirect(f"/profile/{username}")

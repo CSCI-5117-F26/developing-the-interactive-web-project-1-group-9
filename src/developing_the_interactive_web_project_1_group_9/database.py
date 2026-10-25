@@ -165,6 +165,43 @@ def get_user_by_auth0(auth0_id):
             return result[0]
     return None
 
+#follower management
+
+def follow_user(follower_id, following_id):
+    if follower_id == following_id: # user cant follow self
+        return False
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""INSERT INTO follows (follower_id, following_id) VALUES (%s, %s) ON CONFLICT DO NOTHING;""", (follower_id, following_id))
+    cur.execute("""UPDATE users SET following_count = following_count + 1 WHERE id = %s;""", (follower_id,))
+    cur.execute("""UPDATE users SET follower_count = follower_count + 1 WHERE id = %s;""", (following_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return True
+
+def unfollow_user(follower_id, following_id):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""DELETE FROM follows WHERE follower_id = %s AND following_id = %s;""", (follower_id, following_id))
+    cur.execute("""UPDATE users SET following_count = GREATEST(following_count - 1, 0) WHERE id = %s;""", (follower_id,)) # dont let count go negative
+    cur.execute("""UPDATE users SET follower_count = GREATEST(follower_count - 1, 0) WHERE id = %s;""", (following_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def is_following(follower_id, following_id):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""SELECT 1 FROM follows WHERE follower_id = %s AND following_id = %s;""", (follower_id, following_id))
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    if result:
+            return result
+    return None
+
+
 #post management
 def create_post(userid, title, content):
     conn = psycopg.connect(os.environ["DB_URL"])
