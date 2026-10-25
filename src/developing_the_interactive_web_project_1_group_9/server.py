@@ -175,10 +175,10 @@ async def submit_post():
     
     if approved_title is True and approved_post is True:
         create_post(user_id, title, post)
-        flash("Post created successfully!", "success")
+        flash("Post created successfully!")
     elif approved_title is False and approved_post is False:
-        flash("Your post was rejected!", "danger")
+        flash("Your post was rejected!")
     else:
-        flash("Your post was not successful", "warning")
+        flash("Your post was not successful")
         
     return redirect(url_for('feeds'))

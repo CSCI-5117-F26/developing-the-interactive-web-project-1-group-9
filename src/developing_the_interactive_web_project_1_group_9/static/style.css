@@ -105,6 +105,29 @@ a {
     width: 100%;
 }
 
+.flash-alert {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    background-color: var(--accent-soft);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+
+    padding: 10px 8px;
+    margin: 10px 0;
+}
+
+.flash-alert-close {
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
 /* ---------- search ---------- */
 .pure-form input.search {
     width: 100%;

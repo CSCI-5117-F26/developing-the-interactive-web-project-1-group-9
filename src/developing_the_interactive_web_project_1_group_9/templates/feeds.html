@@ -19,16 +19,15 @@
     <main>
 
         <!-- show message posting feedback -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% for category, message in messages %}
-                <div class="alert theme-{{ category }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
-                    </button>
-                </div>
-            {% endfor %}
-        {% endwith %}
+        {% for category, message in messages %}
+            <div class="flash-alert" role="alert">
+                {{ message }}
+            
+                <button type="button" class="flash-alert-close" onclick="this.parentElement.remove()" aria-label="Close">
+                    &times;
+                </button>
+            </div>
+        {% endfor %}
 
         <!-- Create Post -->
         <section class="card">
