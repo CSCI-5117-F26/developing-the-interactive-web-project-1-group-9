@@ -89,7 +89,7 @@ def get_user(userid):
 def get_user_by_username(username):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
-    cur.execute("""SELECT id, username, nickname, email, bio, follower_count, following_count WHERE username = %s;""", (username,))
+    cur.execute("""SELECT id, username, nickname, email, bio, follower_count, following_count FROM users WHERE username = %s;""", (username,))
     user = cur.fetchone()
     cur.close()
     conn.close()
