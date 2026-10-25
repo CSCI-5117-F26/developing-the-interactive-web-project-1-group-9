@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Search{% endblock %}
+
+{% block content %}
+
+<div class="page feed">
+    <!-- Header -->
+     <header class="topbar">
+        <a href="/feeds" class="btn btn-primary">Main feed</a>
+        
+        <form class="pure-form" role="search" action={{url_for('search')}} method="POST">
+            <input class="search" type="search" name="search" placeholder="Search people and posts">
+            <button type="submit" style="display: none;"></button>
+        </form>
+    </header>
+    <!-- Body -->
+    <main>
+    {% if search_results | length == 0 %}
+        <p>Oh no! There were no results found! Maybe try a searching something else?</p>
+    {% elif profile %}
+        <!-- Render list of found profiles -->
+         <div class="pure-menu">
+            <!-- Make link to profile for each profile -->
+             <span class="pure-menu-heading">Profiles</span>
+             <ul class="pure-menu-list">
+                {% for user_id, username, bio in search_results %}
+                    <li class="pure-menu-item">
+                        <a href={{'/profile/{}'.format(username)}} class="pure-menu-link">
+                            <article class="card post">
+                                <div class="post-header">
+                                    <div class="post-author">
+                                        <img src={{'/pfp/{}'.format(user_id)}} " class="post-avatar">
+                                        <strong>{{ username }}</strong>
+                                    </div>
+                                </div>
+                            <p class="post-body">{{ bio }}</p>
+                            </article>
+                        </a>
+                    </li>
+                {% endfor %}
+             </ul>
+         </div>
+    {% else %}
+        <!-- Render list of posts found, yoinked from Ali's feeds branch -->
+         <section>
+          
+            <h3>Posts about {{ search_term }}</h3>
+            {% for post in search_results %} <!-- Changed posts to post, rest should be the same in final site-->
+            <article class="card post">
+            
+                <!-- Author -->
+                <div class="post-header">
+            
+                    <div class="post-author">
+            
+                        <a href="/profile">
+                            <img src="https://www.looper.com/img/gallery/the-untold-truth-of-bruce-wayne/bruce-wayne-is-actually-batmans-mask-1638569177.jpg" alt="John Doe"
+                                class="post-avatar">
+                        </a>
+            
+                        <div>
+                            <strong>@{{ post[2] }}</strong>
+                            <time datetime="2026-10-17">{{post[5]}}</time>
+                        </div>
+            
+                    </div>
+            
+                    <a href="#" class="btn">Follow</a>
+            
+                </div>
+            
+                <!-- Post content -->
+                <p class="post-body">
+                    {{ post[1] }}
+                </p>
+            
+                <span class="happiness">🌦️ Great</span>
+            
+                <!-- Interactions -->
+                <div class="post-actions">
+            
+                    <button type="button" class="post-action" >
+                        {{post[3]}} Happiness
+                    </button>
+                    
+                    <!--PLACE HOLDER HREF, OG DOES NOT WORK YET-->
+                    <a class="post-action" href="#">
+                      {{post[4]}} Comments
+                    </a>
+            
+                </div>
+            
+            </article>
+
+          {% endfor %}
+        </section>
+    {% endif %}
+    </main>
+</div>
+
+{% endblock %}

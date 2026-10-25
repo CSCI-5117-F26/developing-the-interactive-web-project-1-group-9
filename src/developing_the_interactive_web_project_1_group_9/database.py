@@ -14,12 +14,20 @@ def create_user(auth_id, username, email):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO users (auth_id, username, email) VALUES (%s, %s, %s) RETURNING id;""", (auth_id, username, email))
+        INSERT INTO users (auth_id, username,nickname, email) VALUES (%s, %s, %s, %s) RETURNING id;""", (auth_id, username, username, email))
     user_id = cur.fetchone()[0] # should only fetch id of current user
     conn.commit()
     cur.close()
     conn.close()
     return user_id
+
+def set_nickname(userid, nickname):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""UPDATE users SET nickname = %s WHERE id = %s;""", (nickname, userid))
+    conn.commit()
+    cur.close()
+    conn.close()
 
 def set_bio(userid, bio):
     conn = psycopg.connect(os.environ["DB_URL"])
@@ -62,17 +70,41 @@ def set_banner(userid, filename, image):
 def get_user(userid):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
-    cur.execute("""SELECT username, email, bio FROM users WHERE id = %s;""", (userid,))
+    cur.execute("""SELECT id, username, nickname, email, bio, follower_count, following_count FROM users WHERE id = %s;""", (userid,))
     user = cur.fetchone()
     cur.close()
     conn.close()
     if not user:
         return None
     return {
-        "username": user[0],
-        "email": user[1],
-        "bio": user[2]
+        "id": user[0],
+        "username": user[1],
+        "nickname": user[2],
+        "email": user[3],
+        "bio": user[4],
+        "follower_count": user[5],
+        "following_count": user[6]
     }
+
+def get_user_by_username(username):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""SELECT id, username, nickname, email, bio, follower_count, following_count FROM users WHERE username = %s;""", (username,))
+    user = cur.fetchone()
+    cur.close()
+    conn.close()
+    if not user:
+        return None
+    return {
+        "id": user[0],
+        "username": user[1],
+        "nickname": user[2],
+        "email": user[3],
+        "bio": user[4],
+        "follower_count": user[5],
+        "following_count": user[6]
+    }
+
 
 def get_profile_picture(userid):
     conn = psycopg.connect(os.environ["DB_URL"])
@@ -174,3 +206,56 @@ def create_comment(userid, postid, content):
     cur.close()
     conn.close()
     return comment_id
+
+# Search
+def search_database(search_term, fetch_amount):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    # Have to do some shenanigans because %%s% would not pass the string argument in
+    if search_term.startswith('@'):
+        command = """
+            SELECT id, username, bio
+            FROM users 
+            WHERE username ILIKE '%%' || %s || '%%'
+                OR bio ILIKE '%%' || %s || '%%'
+            LIMIT %s;
+        """
+        cur.execute(command, (search_term[1:], search_term[1:], fetch_amount))
+        profiles = cur.fetchall()
+        print("searched profiles:")
+        print(profiles)
+        conn.commit()
+        cur.close()
+        conn.close()
+        return profiles
+    else:
+        # Yoink Ali's code again
+        cur.execute (
+            """
+            WITH simlar_posts AS (
+                SELECT * FROM posts WHERE title ILIKE '%%' || %s || '%%' OR content ILIKE '%%' || %s || '%%' LIMIT %s
+            )
+            SELECT
+                simlar_posts.id,
+                simlar_posts.content,
+                users.username,
+                simlar_posts.likes_count,
+                simlar_posts.comment_count,
+                simlar_posts.post_created
+            FROM simlar_posts
+            JOIN users ON simlar_posts.user_id = users.id;
+            """
+            , (search_term, search_term, fetch_amount)
+        )
+        posts = cur.fetchall()
+        if posts:
+            posts = [
+            [row[0], row[1], row[2], row[3], row[4], row[5].strftime("%m/%d/%y")]
+            for row in posts
+        ]
+        print("searched posts")
+        print(posts)
+        conn.commit()
+        cur.close()
+        conn.close()
+        return posts

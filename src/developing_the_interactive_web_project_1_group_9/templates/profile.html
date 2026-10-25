@@ -8,8 +8,10 @@
 
     <header class="topbar">
         <a href="/feeds" class="btn btn-primary">Main feed</a>
-        <form class="pure-form" role="search">
-            <input class="search" type="search" placeholder="Search people and posts">
+        
+        <form class="pure-form" role="search" action={{url_for('search')}} method="POST">
+            <input class="search" type="search" name="search" placeholder="Search people and posts">
+            <button type="submit" style="display: none;"></button>
         </form>
     </header>
 
@@ -24,7 +26,7 @@
                 </div>
 
                 <div class="profile-details">
-                    <h1 class="name">{{ user.username }}</h1>
+                    <h1 class="name">{{ user.nickname }}</h1>
                     <p class="handle">@{{ user.username }}</p>
 
                     <div class="profile-bio">
@@ -38,7 +40,7 @@
                 <!-- Button and Dialog to show following -->
                 <button command="show-modal" commandfor="user-following" class="btn btn-block stat">
                     <span>Following</span>
-                    <strong>182</strong>
+                    <strong> {{ user.following_count }}</strong>
                 </button>
             
                 <dialog id="user-following" class="profile-dialog">
@@ -49,7 +51,7 @@
                 <!-- Button and Dialog to show followers -->
                 <button command="show-modal" commandfor="user-followers" class="btn btn-block stat">
                     <span>Followers</span>
-                    <strong>1,204</strong>
+                    <strong> {{ user.follower_count }}</strong>
                 </button>
             
                 <dialog id="user-followers" class="profile-dialog">
@@ -68,6 +70,8 @@
                 <!-- Dialog to show edit profile -->
                 <dialog id="edit-profile" class="profile-dialog">
                     <form action="/profile/edit" method="POST" enctype="multipart/form-data">
+                       <input type="text" name="nickname" maxlength="50">
+                        <br>
                         <label>Bio</label>
                         <textarea name="bio"></textarea>
                         <br>
@@ -81,9 +85,11 @@
                     <button commandfor="edit-profile" command="close">Close</button>
                 </dialog>
 
-                <button class="btn btn-primary btn-block" data-show="other">
+                {% if is_owner == False %} <!-- user can't follow themself -->
+                <button class="btn btn-primary btn-block">
                     Follow
                 </button>
+                {% endif %}
 
                 <a href="/signin" class="btn btn-block" data-show="guest">
                     Log in to follow
@@ -91,9 +97,11 @@
 
                 <p></p>
 
-                <a href="/logout" class="btn btn-block" data-show="owner">
+                {% if is_owner %} <!-- only really wanna show this logout button to owner -->
+                <a href="/logout" class="btn btn-block">
                     Log out
                 </a>
+                {% endif %}
             </div>
 
            
