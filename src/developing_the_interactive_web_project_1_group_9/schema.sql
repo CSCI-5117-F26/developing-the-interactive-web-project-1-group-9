@@ -19,7 +19,7 @@ CREATE TABLE users (
     email VARCHAR(100) UNIQUE NOT NULL,
     nickname VARCHAR(50),
     follower_count INTEGER NOT NULL DEFAULT 0,
-    following_count INTEGER NOT NULL DEFAULT 0;
+    following_count INTEGER NOT NULL DEFAULT 0,
     bio TEXT,
     is_admin BOOLEAN DEFAULT FALSE NOT NULL,
     user_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
