@@ -3,6 +3,7 @@ from auth0_server_python.auth_types import LogoutOptions
 from developing_the_interactive_web_project_1_group_9.auth import init_auth0
 from dotenv import load_dotenv
 from developing_the_interactive_web_project_1_group_9.database import *
+from developing_the_interactive_web_project_1_group_9.llm import *
 
 # import psycopg
 import os
