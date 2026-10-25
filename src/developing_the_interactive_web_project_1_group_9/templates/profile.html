@@ -63,6 +63,7 @@
             <p></p>
 
             <div class="profile-stats">
+                {% if is_owner %}
                 <button command="show-modal" commandfor="edit-profile" class="btn btn-block" data-show="owner">
                     Edit Profile
                 </button>
@@ -84,6 +85,7 @@
                     </form>
                     <button commandfor="edit-profile" command="close">Close</button>
                 </dialog>
+                {% endif %}
 
                 {% if is_owner == False %} <!-- user can't follow themself -->
                 <button class="btn btn-primary btn-block">
