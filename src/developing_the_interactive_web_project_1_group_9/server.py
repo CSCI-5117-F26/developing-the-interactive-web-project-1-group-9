@@ -231,7 +231,7 @@ async def follow(username):
     return redirect(f"/profile/{username}")
 
 @app.route("/unfollow/<username>", methods=["POST"])
-async def follow(username):
+async def unfollow(username):
     auth0 = init_auth0()
     store_options = {"request": request}
     auth_user = await auth0.get_user(store_options)
