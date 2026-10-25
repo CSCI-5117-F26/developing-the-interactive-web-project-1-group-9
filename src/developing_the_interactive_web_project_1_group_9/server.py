@@ -174,13 +174,11 @@ async def submit_post():
     approved_post = moderate_post(post)
     
     if approved_title is True and approved_post is True:
-        post_id = create_post(user_id, title, post)
-        print("Created post ID:", post_id)
-        flash("Post created successfully!")
-        return redirect(url_for('feeds'))
+        create_post(user_id, title, post)
+        flash("Post created successfully!", "success")
     elif approved_title is False and approved_post is False:
-        flash("Your post was rejected!")
-        return redirect(url_for('feeds'))
+        flash("Your post was rejected!", "danger")
     else:
-        flash("Your post was not successful")
-        return redirect(url_for('feeds'))
+        flash("Your post was not successful", "warning")
+        
+    return redirect(url_for('feeds'))
