@@ -2,7 +2,7 @@ from flask import Flask, flash, render_template, request, g, Response, make_resp
 from auth0_server_python.auth_types import LogoutOptions
 from developing_the_interactive_web_project_1_group_9.auth import init_auth0
 from dotenv import load_dotenv
-from .database import *
+from database import *
 from .llm import *
 
 # import psycopg
