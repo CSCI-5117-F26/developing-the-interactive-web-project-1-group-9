@@ -51,6 +51,9 @@
     </section>
             
       <h3>Comments</h3>
+      {% if comments == [] %}
+        <h3> No Comments</h3>
+      {% endif %}
       {% for comment in comments %}
       <article class="card post">
       
