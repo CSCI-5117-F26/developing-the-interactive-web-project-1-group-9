@@ -3,7 +3,7 @@
 {% block title %}Search{% endblock %}
 
 {% block content %}
-
+<main>
 <div class="search-page">
     <!-- Header -->
      <header class="topbar">
@@ -25,12 +25,16 @@
              <ul class="pure-menu-list">
                 {% for user_id, username, bio in search_results %}
                     <li class="pure-menu-item">
-                        <a href="/profile/{{ username }}" class="pure-menu-link">
-                            <div class="avatar">
-                                <img src={{'/pfp/{}'.format(user_id)}} alt="John Doe">
-                            </div>
-                            <p>{{ username }}</p>
-                            <span>{{ bio }}</span>
+                        <a href={{'/profile/{}'.format(username)}} class="pure-menu-link">
+                            <article class="card post">
+                                <div class="post-header">
+                                    <div class="post-author">
+                                        <img src={{'/pfp/{}'.format(user_id)}} " class="post-avatar">
+                                        <strong>{{ username }}</strong>
+                                    </div>
+                                </div>
+                            <p class="post-body">{{ bio }}</p>
+                            </article>
                         </a>
                     </li>
                 {% endfor %}
@@ -92,5 +96,6 @@
         </section>
     {% endif %}
 </div>
+</main>
 
 {% endblock %}
