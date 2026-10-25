@@ -3,18 +3,19 @@
 {% block title %}Search{% endblock %}
 
 {% block content %}
-<main>
-<div class="search-page">
+
+<div class="page feed">
     <!-- Header -->
      <header class="topbar">
         <a href="/feeds" class="btn btn-primary">Main feed</a>
         
         <form class="pure-form" role="search" action={{url_for('search')}} method="POST">
-            <input class="search" type="search" name="search" value={{search_term}}>
+            <input class="search" type="search" name="search" placeholder="Search people and posts">
             <button type="submit" style="display: none;"></button>
         </form>
     </header>
     <!-- Body -->
+    <main>
     {% if search_results | length == 0 %}
         <p>Oh no! There were no results found! Maybe try a searching something else?</p>
     {% elif profile %}
@@ -95,7 +96,7 @@
           {% endfor %}
         </section>
     {% endif %}
+    </main>
 </div>
-</main>
 
 {% endblock %}
