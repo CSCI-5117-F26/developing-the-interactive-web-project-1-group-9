@@ -9,9 +9,7 @@ client = genai.Client()
 
 
 # can replace input text with prompt
-prompt_text = 
-
-'''
+prompt_text = '''
 You are a content moderator for a positive, community-driven social media platform called sunshine. The platform's mission is to build a supportive, 
 uplifting space focused on celebrating milestones, asking for help on how overcome certain difficulties, and encouraging growth. 
 Your goal is to protect the community from negative, controversial, and discouraging posts. Analyze the following text and return true if text is safe to
@@ -22,9 +20,7 @@ Text to Evaluate:
 
 '''
 
-prompt_img = 
-
-'''
+prompt_img = '''
 
 You are a content moderator for a positive, community-driven social media platform called sunshine. The platform's mission is to build a supportive, 
 uplifting space focused on celebrating milestones, asking for help on how overcome certain difficulties, and encouraging growth. 
@@ -36,30 +32,47 @@ post and false if image is unsafe to post. Don't provide an explnation. Return o
 '''
 
 
-post = "I am happy"
-interaction = client.interactions.create(
+def moderate_post(post):
+    interaction = client.interactions.create(
     model="gemini-3.5-flash-lite",
-    input="you are a positive social media filter. Decide whether the following post is positive or not. The post: "+post
+    input=prompt_text + "\n" + post
+    )
+    result = interaction.output_text.strip().lower()
+    if result == "true":
+        return True
+    elif result == "false":
+        return False
+    else:
+        return "None"
 
-)
-print(interaction.output_text)
+
+post = "I am happy"
+print(moderate_post(post))
+
+
+# interaction = client.interactions.create(
+#     model="gemini-3.5-flash-lite",
+#     input="you are a positive social media filter. Decide whether the following post is positive or not. The post: "+post
+
+# )
+# print(interaction.output_text)
 
 
 
-with open("sky.jpg", "rb") as f:
-    image_bytes = f.read()
-image_b64 = base64.b64encode(image_bytes).decode("utf-8")
+# with open("sky.jpg", "rb") as f:
+#     image_bytes = f.read()
+# image_b64 = base64.b64encode(image_bytes).decode("utf-8")
 
-interaction = client.interactions.create(
-    model="gemini-3.5-flash",
-    input=[
-        {"type": "text", "text": "describe this image in a few words."},
-        {
-            "type": "image",
-            "data": image_b64,
-            "mime_type": "image/jpeg"
-        }
+# interaction = client.interactions.create(
+#     model="gemini-3.5-flash",
+#     input=[
+#         {"type": "text", "text": "describe this image in a few words."},
+#         {
+#             "type": "image",
+#             "data": image_b64,
+#             "mime_type": "image/jpeg"
+#         }
        
-    ]
-)
-print(interaction.output_text)
+#     ]
+# )
+# print(interaction.output_text)
