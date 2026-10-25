@@ -193,7 +193,7 @@ def unfollow_user(follower_id, following_id):
 def is_following(follower_id, following_id):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
-    cur.execute("""SELECT FROM follows WHERE follower_id = %s AND following_id = %s;""", (follower_id, following_id))
+    cur.execute("""SELECT 1 FROM follows WHERE follower_id = %s AND following_id = %s;""", (follower_id, following_id))
     result = cur.fetchone()
     cur.close()
     conn.close()
