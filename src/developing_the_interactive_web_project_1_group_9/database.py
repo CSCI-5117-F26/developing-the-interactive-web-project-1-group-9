@@ -182,9 +182,13 @@ def search_database(search_term, fetch_amount):
     # Have to do some shenanigans because %%s% would not pass the string argument in
     if search_term.startswith('@'):
         command = """
-            SELECT id, username FROM users WHERE username ILIKE '%%' || %s || '%%' LIMIT %s;
+            SELECT id, username, bio
+            FROM users 
+            WHERE username ILIKE '%%' || %s || '%%'
+                OR bio ILIKE '%%' || %s || '%%'
+            LIMIT %s;
         """
-        cur.execute(command, (search_term[1:], fetch_amount))
+        cur.execute(command, (search_term[1:], search_term[1:], fetch_amount))
         profiles = cur.fetchall()
         print("searched profiles:")
         print(profiles)

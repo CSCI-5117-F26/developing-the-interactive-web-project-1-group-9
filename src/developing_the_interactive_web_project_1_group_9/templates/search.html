@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Feed{% endblock %}
+{% block title %}Search{% endblock %}
 
 {% block content %}
 
@@ -23,11 +23,12 @@
             <!-- Make link to profile for each profile -->
              <span class="pure-menu-heading">Profiles</span>
              <ul class="pure-menu-list">
-                {% for user_id, username in search_results %}
+                {% for user_id, username, bio in search_results %}
                     <li class="pure-menu-item">
                         <a href="/profile/{{ username }}" class="pure-menu-link">
                             <img href="/pfp/{{ user_id }}">
-                            <span>{{ username }}</span>
+                            <p>{{ username }}</p>
+                            <span>{{ bio }}</span>
                         </a>
                     </li>
                 {% endfor %}
@@ -76,7 +77,7 @@
                         {{post[3]}} Happiness
                     </button>
                     
-                    <!--PLACE HOLDER DOES NOT WORK YET-->
+                    <!--PLACE HOLDER HREF, OG DOES NOT WORK YET-->
                     <a class="post-action" href="#">
                       {{post[4]}} Comments
                     </a>
