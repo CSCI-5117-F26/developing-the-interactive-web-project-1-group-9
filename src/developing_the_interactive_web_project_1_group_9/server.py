@@ -161,8 +161,15 @@ async def submit_post():
     
     user_id = get_user_by_auth0(user["sub"])
 
+    # get form data
     title = request.form.get("title")
     post = request.form.get("post")
+
+    if not title or not post:
+        flash("Title and post content are required.")
+        return redirect(url_for("feeds"))
+
+    # moderate both title and content
     approved_title = moderate_post(title)
     approved_post = moderate_post(post)
     
