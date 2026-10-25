@@ -1,4 +1,4 @@
-from flask import Flask, flash, render_template, request, g, Response, make_response, redirect, url_for
+from flask import Flask, render_template, request, jsonify, g, Response, make_response, redirect, url_for
 from auth0_server_python.auth_types import LogoutOptions
 from developing_the_interactive_web_project_1_group_9.auth import init_auth0
 from dotenv import load_dotenv
@@ -178,37 +178,3 @@ def banner(userid):
     if not image:
         return "", 404
     return Response(image[0], mimetype="image/jpeg")
-
-
-@app.route("/post", methods=['POST'])
-async def submit_post():
-    auth0 = init_auth0()
-    store_options = {"request": request}
-    user = await auth0.get_user(store_options)
-
-    if not user:
-        return redirect(url_for('login'))
-    
-    user_id = get_user_by_auth0(user["sub"])
-
-    # get form data
-    title = request.form.get("title")
-    post = request.form.get("post")
-
-    if not title or not post:
-        flash("Title and post content are required.")
-        return redirect(url_for("feeds"))
-
-    # moderate both title and content
-    approved_title = moderate_post(title)
-    approved_post = moderate_post(post)
-    
-    if approved_title is True and approved_post is True:
-        create_post(user_id, title, post)
-        flash("Post created successfully!")
-    elif approved_title is False and approved_post is False:
-        flash("Your post was rejected!")
-    else:
-        flash("Your post was not successful")
-        
-    return redirect(url_for('feeds'))
