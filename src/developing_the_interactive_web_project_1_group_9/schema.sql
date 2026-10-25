@@ -17,7 +17,9 @@ CREATE TABLE users (
     auth_id TEXT UNIQUE NOT NULL,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    -- user_password TEXT NOT NULL, --managed by auth0
+    nickname VARCHAR(50),
+    follower_count INTEGER NOT NULL DEFAULT 0,
+    following_count INTEGER NOT NULL DEFAULT 0;
     bio TEXT,
     is_admin BOOLEAN DEFAULT FALSE NOT NULL,
     user_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
