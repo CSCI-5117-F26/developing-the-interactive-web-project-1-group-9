@@ -8,8 +8,10 @@
 
     <header class="topbar">
         <a href="/feeds" class="btn btn-primary">Main feed</a>
-        <form class="pure-form" role="search">
-            <input class="search" type="search" placeholder="Search people and posts">
+        
+        <form class="pure-form" role="search" action={{url_for('search')}} method="POST">
+            <input class="search" type="search" name="search" placeholder="Search people and posts">
+            <button type="submit" style="display: none;"></button>
         </form>
     </header>
 
@@ -20,7 +22,7 @@
 
             <div class="profile-info">
                 <div class="avatar">
-                    <img src="{{user.pfp}}" alt="Profile Picture">
+                    <img src="{{user.pfp}}" alt="John Doe">
                 </div>
 
                 <div class="profile-details">
@@ -61,10 +63,10 @@
             <p></p>
 
             <div class="profile-stats">
-                {% if is_owner %}
                 <button command="show-modal" commandfor="edit-profile" class="btn btn-block" data-show="owner">
                     Edit Profile
                 </button>
+
                 <!-- Dialog to show edit profile -->
                 <dialog id="edit-profile" class="profile-dialog">
                     <form action="/profile/edit" method="POST" enctype="multipart/form-data">
@@ -82,13 +84,11 @@
                     </form>
                     <button commandfor="edit-profile" command="close">Close</button>
                 </dialog>
-                {% endif %}
 
                 {% if is_owner == False %} <!-- user can't follow themself -->
                 <button class="btn btn-primary btn-block">
                     Follow
                 </button>
-                {% endif %}
 
                 <a href="/signin" class="btn btn-block" data-show="guest">
                     Log in to follow
@@ -100,7 +100,6 @@
                 <a href="/logout" class="btn btn-block">
                     Log out
                 </a>
-                {% endif %}
             </div>
 
            
@@ -110,7 +109,8 @@
         <!-- RIGHT -->
         <main class="pure-u-1 pure-u-md-3-4">
             <div class="banner">
-                <img src="{{user.banner}}" alt="Banner">
+                <img src="{{user.banner}}" alt="John Doe"
+                    >
             </div>
 
             <hr>

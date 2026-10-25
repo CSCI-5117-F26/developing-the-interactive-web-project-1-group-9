@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify, g, Response, make_re
 from auth0_server_python.auth_types import LogoutOptions
 from developing_the_interactive_web_project_1_group_9.auth import init_auth0
 from dotenv import load_dotenv
-from database import *
+from developing_the_interactive_web_project_1_group_9.database import *
 
 # import psycopg
 import os
@@ -10,7 +10,7 @@ import os
 app = Flask(__name__)
 app.secret_key = os.getenv('AUTH0_SECRET')
 
-
+load_dotenv()
 # url =  os.environ["DATABASE_URL"]
 
 # schema = """
@@ -60,7 +60,7 @@ async def callback():
         if userid is None:
             create_user(auth0_id, username, email)
         response.status_code = 302
-        response.headers["Location"] = url_for('profile')
+        response.headers["Location"] = url_for('feed')
         return response
     except Exception as e:
         return f"Authentication error: {str(e)}", 400
@@ -89,28 +89,27 @@ async def feeds():
     # Whatever logic we use to personalize feed to user goes here
     return render_template("feeds.html")
 
-# @app.route("/profile")
-# async def feed():
-#     auth0 = init_auth0()
-#     store_options = {"request": request}
-#     user = await auth0.get_user(store_options)
-#     if not user:
-#         return redirect(url_for('login'))
-#     # fetch profile info from db using auth0 id
-#     userid = get_user_by_auth0(user["sub"])
-#     user_data = get_user(userid)
-#     user_data["pfp"] = f"/pfp/{userid}" # append pfp and banner photos to user data object for simplicity
-#     user_data["banner"] = f"/banner/{userid}"
-#     return render_template("profile.html", user=user_data)
+@app.route('/search', methods=["POST"])
+async def search():
+    search_term = request.form.get("search")
+    print("search term")
+    print (search_term)
+    search_results = search_database(search_term, 20)
+    print("search results")
+    print (search_results)
+    search_type = search_term.startswith('@')
+    return render_template("search.html", search_results=search_results, profile=search_type, search_term=search_term)
 
-# default route /profile path, redirects to /profile/<username> passing current auth0 user's db username
+# I'm assuming /profile is personal profile, and there's different route
+# For looking at other people's profile?
 @app.route("/profile")
-async def profile():
+async def feed():
     auth0 = init_auth0()
     store_options = {"request": request}
     user = await auth0.get_user(store_options)
     if not user:
-        return redirect(url_for("login"))
+        return redirect(url_for('login'))
+    # fetch profile info from db using auth0 id
     userid = get_user_by_auth0(user["sub"])
     user_data = get_user(userid)
     return redirect(f"/profile/{user_data['username']}")

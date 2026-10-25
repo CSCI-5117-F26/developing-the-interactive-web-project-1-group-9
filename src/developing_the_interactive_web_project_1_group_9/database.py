@@ -206,3 +206,56 @@ def create_comment(userid, postid, content):
     cur.close()
     conn.close()
     return comment_id
+
+# Search
+def search_database(search_term, fetch_amount):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    # Have to do some shenanigans because %%s% would not pass the string argument in
+    if search_term.startswith('@'):
+        command = """
+            SELECT id, username, bio
+            FROM users 
+            WHERE username ILIKE '%%' || %s || '%%'
+                OR bio ILIKE '%%' || %s || '%%'
+            LIMIT %s;
+        """
+        cur.execute(command, (search_term[1:], search_term[1:], fetch_amount))
+        profiles = cur.fetchall()
+        print("searched profiles:")
+        print(profiles)
+        conn.commit()
+        cur.close()
+        conn.close()
+        return profiles
+    else:
+        # Yoink Ali's code again
+        cur.execute (
+            """
+            WITH simlar_posts AS (
+                SELECT * FROM posts WHERE title ILIKE '%%' || %s || '%%' OR content ILIKE '%%' || %s || '%%' LIMIT %s
+            )
+            SELECT
+                simlar_posts.id,
+                simlar_posts.content,
+                users.username,
+                simlar_posts.likes_count,
+                simlar_posts.comment_count,
+                simlar_posts.post_created
+            FROM simlar_posts
+            JOIN users ON simlar_posts.user_id = users.id;
+            """
+            , (search_term, search_term, fetch_amount)
+        )
+        posts = cur.fetchall()
+        if posts:
+            posts = [
+            [row[0], row[1], row[2], row[3], row[4], row[5].strftime("%m/%d/%y")]
+            for row in posts
+        ]
+        print("searched posts")
+        print(posts)
+        conn.commit()
+        cur.close()
+        conn.close()
+        return posts
