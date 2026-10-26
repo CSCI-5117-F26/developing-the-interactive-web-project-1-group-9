@@ -27,12 +27,20 @@
 
       <!-- Interactions -->
       <div class="post-actions">
-      <form action="/like/{{ post.post_id }}" method="POST">
-          <button type="submit" class="post-action" >
-              👍 {{ post.likes }} happiness
+      {% if liked %}
+      <form action="/unlike/{{ post.post_id }}" method="POST">
+          <button type="submit" class="post-action">
+              👍 {{ post.likes }} Happiness
           </button>
-      </div>
       </form>
+      {% else %}
+      <form action="/like/{{ post.post_id }}" method="POST">
+          <button type="submit" class="post-action">
+              👍 {{ post.likes }} Happiness
+          </button>
+      </form>
+      {% endif %}
+      </div>
     </article>
 
     {% for message in get_flashed_messages() %}
@@ -101,11 +109,9 @@
       
           <!-- Interactions -->
           <div class="post-actions">
-              <form action="/like/{{ post.post_id }}" method="POST">
                   <button type="submit" class="post-action" >
-                      👍 {{ post.likes }} happiness
+                      👍 0 Happiness
                   </button>
-              </form>
           </div>
       
       </article>
