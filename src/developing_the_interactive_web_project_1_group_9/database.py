@@ -354,7 +354,7 @@ def get_posts_by_id(userid):
 def create_post(userid, content):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
-    cur.execute("""INSERT INTO posts (user_id, content) VALUES (%s, %s, %s) RETURNING id;""", (userid, content))
+    cur.execute("""INSERT INTO posts (user_id, content) VALUES (%s, %s) RETURNING id;""", (userid, content))
     post_id = cur.fetchone()[0]
     conn.commit()
     cur.close()
