@@ -147,7 +147,7 @@ async def user_profile(username):
             following = is_following(current_user_id, user["id"])
 
     posts = get_posts_by_id(user["id"])
-    if user:
+    if current_user:
         userid = get_user_by_auth0(current_user["sub"])
         for post in posts:
             post["liked"] = has_liked(userid, post["post_id"])
@@ -219,6 +219,8 @@ async def post_page(post_id):
     auth_user = await auth0.get_user(store_options)
     post = get_post(post_id)
     comments = get_comments(post_id)
+    if not comments:
+      comments = ""
     liked = False
     if auth_user:
         userid = get_user_by_auth0(auth_user["sub"])
@@ -284,22 +286,20 @@ async def submit_post():
     user_id = get_user_by_auth0(user["sub"])
 
     # get form data
-    title = request.form.get("title")
     post = request.form.get("post")
 
-    if not title or not post:
-        flash("Title and post content are required.")
+    if not post:
+        flash("Post content is required.")
         return redirect(url_for("feeds"))
 
     # moderate both title and content
-    approved_title = moderate_post(title)
     approved_post = moderate_post(post)
     
-    if approved_title is True and approved_post is True:
-        create_post(user_id, title, post)
+    if approved_post:
+        create_post(user_id, post)
         flash("Post created successfully!")
-    elif approved_title is False and approved_post is False:
-        flash("Your post was rejected!")
+    elif approved_post is False:
+        flash("Your post was rejected! Try being more positive!")
     else:
         flash("Your post was not successful")
         

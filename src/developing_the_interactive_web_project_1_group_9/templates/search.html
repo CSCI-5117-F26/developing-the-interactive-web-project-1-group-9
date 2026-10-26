@@ -47,14 +47,13 @@
 
                     <div class="post-author">
 
-                        <a href="/profile">
-                            <img src="https://www.looper.com/img/gallery/the-untold-truth-of-bruce-wayne/bruce-wayne-is-actually-batmans-mask-1638569177.jpg"
-                                alt="John Doe" class="post-avatar">
+                        <a href="{{ url_for('user_profile', username=post.username) }}">
+                          <img src="{{post.pfp}}" alt="Avatar" class="post-avatar">
                         </a>
 
                         <div>
-                            <strong>@{{ post[2] }}</strong>
-                            <time datetime="2026-10-17">{{post[5]}}</time>
+                            <strong>{{ post.nickname }}</strong>
+                            <time datetime="2026-10-17">{{post.time_created}}</time>
                         </div>
 
                     </div>
@@ -65,23 +64,28 @@
 
                 <!-- Post content -->
                 <p class="post-body">
-                    {{ post[1] }}
+                    {{ post.content }}
                 </p>
 
 
                 <!-- Interactions -->
                 <div class="post-actions">
 
-                    <button type="button" class="post-action">
-                        {{post[3]}} Happiness
-                    </button>
+                  {% if post.liked %}
+                  <form action="/unlike/{{ post.post_id }}" method="POST">
+                      <button type="submit" class="post-action">🚫👍 {{ post.likes }} Happiness</button>
+                  </form>
+                  {% else %}
+                  <form action="/like/{{ post.post_id }}" method="POST">
+                      <button type="submit" class="post-action">👍 {{ post.likes }} Happiness</button>
+                  </form>
+                  {% endif %}
 
-                    <!--PLACE HOLDER HREF, OG DOES NOT WORK YET-->
-                    <a class="post-action" href="#">
-                        {{post[4]}} Comments
-                    </a>
+                  <a class="post-action" href="{{ url_for('post_page', post_id=post.post_id) }}">
+                      {{post.comment_count}} Comments
+                  </a>
 
-                </div>
+              </div>
 
             </article>
 

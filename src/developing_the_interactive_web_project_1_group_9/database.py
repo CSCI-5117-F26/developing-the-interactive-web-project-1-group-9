@@ -266,7 +266,7 @@ def get_post(postid):
         "username": post[5],
         "time_created": (post[6] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
         "pfp": f"/pfp/{post[1]}",
-        "nickname": post[6]
+        "nickname": post[7]
     }
 
 def get_posts():
@@ -353,10 +353,10 @@ def get_posts_by_id(userid):
 
 
 #post management
-def create_post(userid, title, content):
+def create_post(userid, content):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
-    cur.execute("""INSERT INTO posts (user_id, title, content) VALUES (%s, %s, %s) RETURNING id;""", (userid, title, content))
+    cur.execute("""INSERT INTO posts (user_id, content) VALUES (%s, %s) RETURNING id;""", (userid, content))
     post_id = cur.fetchone()[0]
     conn.commit()
     cur.close()
@@ -460,24 +460,32 @@ def search_database(search_term, fetch_amount):
                 users.username,
                 simlar_posts.likes_count,
                 simlar_posts.comment_count,
-                simlar_posts.post_created
+                simlar_posts.post_created,
+                simlar_posts.user_id,
+                users.nickname
             FROM simlar_posts
             JOIN users ON simlar_posts.user_id = users.id;
             """
             , (search_term, search_term, fetch_amount)
         )
         posts = cur.fetchall()
-        if posts:
-            posts = [
-            [row[0], row[1], row[2], row[3], row[4], row[5].strftime("%m/%d/%y %I:%M:%S %p")]
-            for row in posts
-        ]
         print("searched posts")
         print(posts)
-        conn.commit()
         cur.close()
         conn.close()
-        return posts
+        return [
+          {
+            "post_id": post[0],
+            "content": post[1],
+            "username": post[2],
+            "likes": post[3],
+            "comment_count": post[4],
+            "time_created": (post[5] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
+            "pfp": f"/pfp/{post[6]}",
+            "nickname": post[7]
+          }
+          for post in posts
+        ]
 
 #like management
 def like_post(userid, postid):
