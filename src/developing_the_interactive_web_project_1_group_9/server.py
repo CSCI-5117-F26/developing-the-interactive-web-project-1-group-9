@@ -74,14 +74,15 @@ async def feeds():
     user = await auth0.get_user(store_options)
     # Whatever logic we use to personalize feed to user goes here
     posts = get_posts_with_usernames()
-    if user:
-        userid = get_user_by_auth0(user["sub"])
-        for post in posts:
-            post["liked"] = has_liked(userid, post["post_id"])
-    else:
-        for post in posts:
-            post["liked"] = False
     if posts:
+        if user:
+            userid = get_user_by_auth0(user["sub"])
+            for post in posts:
+                post["liked"] = has_liked(userid, post["post_id"])
+        else:
+            for post in posts:
+                post["liked"] = False
+
         page = request.args.get('page', 1, type=int)
         per_page = 5
         start = (page - 1) * per_page
@@ -150,16 +151,17 @@ async def user_profile(username):
             following = is_following(current_user_id, user["id"])
 
     posts = get_posts_by_id(user["id"])
-    if user:
-        userid = get_user_by_auth0(current_user["sub"])
-        for post in posts:
-            post["liked"] = has_liked(userid, post["post_id"])
-    else:
-        for post in posts:
-            post["liked"] = False
     following_users = get_following(user["id"])
     followers = get_followers(user["id"])
     if posts:
+        if user:
+            userid = get_user_by_auth0(current_user["sub"])
+            for post in posts:
+                post["liked"] = has_liked(userid, post["post_id"])
+        else:
+            for post in posts:
+                post["liked"] = False
+        
         page = request.args.get('page', 1, type=int)
         per_page = 5
         start = (page - 1) * per_page
