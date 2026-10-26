@@ -220,6 +220,7 @@ def get_post(postid):
     cur.execute("""SELECT
                      posts.id,
                      posts.user_id,
+                     posts.title,
                      posts.content,
                      posts.likes_count,
                      users.username,
@@ -236,10 +237,11 @@ def get_post(postid):
     return {
         "post_id": post[0],
         "user_id": post[1],
-        "content": post[2],
-        "likes": post[3],
-        "username": post[4],
-        "time_created": post[5].strftime("%m/%d/%y"),
+        "title": post[2],
+        "content": post[3],
+        "likes": post[4],
+        "username": post[5],
+        "time_created": post[6].strftime("%m/%d/%y"),
         "pfp": f"/pfp/{post[1]}"
     }
 
@@ -294,6 +296,7 @@ def get_posts_by_id(userid):
       """
       SELECT
         posts.id,
+        posts.title,
         posts.content,
         posts.likes_count,
         posts.comment_count,
@@ -308,11 +311,12 @@ def get_posts_by_id(userid):
     return [
         {
           "post_id": post[0],
-          "content": post[1],
-          "likes": post[2],
-          "comment_count": post[3],
-          "time_created": post[4].strftime("%m/%d/%y"),
-          "pfp": f"/pfp/{post[5]}"
+          "title": post[1],
+          "content": post[2],
+          "likes": post[3],
+          "comment_count": post[4],
+          "time_created": post[5].strftime("%m/%d/%y"),
+          "pfp": f"/pfp/{post[6]}"
       }
       for post in posts
     ]
