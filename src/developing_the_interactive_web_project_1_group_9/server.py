@@ -192,9 +192,16 @@ def banner(userid):
 
 @app.route("/post/<int:post_id>")
 async def post_page(post_id):
+    auth0 = init_auth0()
+    store_options = {"request": request}
+    auth_user = await auth0.get_user(store_options)
     post = get_post(post_id)
     comments = get_comments(post_id)
-    return render_template("post.html", post=post, comments=comments)
+    liked = False
+    if auth_user:
+        userid = get_user_by_auth0(auth_user["sub"])
+        liked = has_liked(userid, post_id)
+    return render_template("post.html", post=post, comments=comments, liked=liked)
 
 @app.route("/post", methods=['POST'])
 async def submit_post():
