@@ -1,79 +1,55 @@
-{% extends "auth-base.html" %}
+<!doctype html>
+<html lang="en">
 
-{% block title %} Login {% endblock %}
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>Sunshine</title>
 
-{% block auth_content %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.1.0/build/pure-min.css"
+        integrity="sha384-kj0X2NG2KHBie8Tq8fH1kxnyWM9XsXQpq7XdwbKmFKjwwaXGKBlB2Klu3VOltSFx" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.1.0/build/grids-responsive-min.css" />
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
 
-<h2>Sign In</h2>
+</head>
 
-<form class="pure-form pure-form-stacked">
-    <!-- Form -->
-    <fieldset>
-        <label for="email">Email</label>
-        <input id="email" type="email" name="email" required>
+<body>
 
-        <label for="password">Password</label>
-        <input id="password" type="password" name="password" required>
+    <main class="page auth-page">
+        <div class="auth-container">
+    
+            <div class="auth-header">
+                <h1>Sunshine</h1>
+            </div>
 
-        <div class="auth-options">
-            <label class="pure-checkbox">
-                <input type="checkbox" name="remember">
-                Remember me
-            </label>
+            <p style="text-align: center;">
+                A cozy little corner of the internet where positivity is encouraged and kindness comes naturally.
+            </p>
+            
+            <form action="/signin">
+                <button type="submit" class="btn btn-primary btn-block">
+                    Sign in
+                </button>
+            </form>
+            
+            <fieldset class="fieldset-divider">
+                <legend>or</legend>
+            </fieldset>
+            
+            <a href="/feeds" class="btn btn-block">
+                Continue as Guest
+            </a>
+    
         </div>
+    </main>
 
-        <form action="/feeds">
-            <button type="submit" class="btn btn-primary btn-block">
-                Sign in
-            </button>
-        </form>
-    </fieldset>
-</form>
+</body>
 
-<button command="show-modal" commandfor="forgot-password" class="btn btn-block">
-    Forgot password?
-</button>
-
-<!-- Dialog to show forgot password -->
-<dialog id="forgot-password" class="profile-dialog">
-    <h3>Reset Password</h3>
-    <p>Enter your email address to receive a password reset link</p>
-    <form method="post" action="/forgot_password" class="pure-form pure-form-stacked">
-        <input type="email" id="reset-email" name="email" placeholder="email" required>
-    
-        <p></p>
-        <button type="submit" class="btn btn-primary">
-            Send Reset Link
-        </button>
-    
-        <button type="button" commandfor="forgot-password" command="close" class="btn">
-            Cancel
-        </button>
-    </form>
-
-</dialog>
-
-<!-- <p style="text-align: center; color: var(--muted);">
-    OR
-</p> -->
-
-<fieldset class="fieldset-divider">
-    <legend>or</legend>
-</fieldset>
+</html>
 
 
 
-<a href="/feeds" class="btn btn-block">
-    Continue as Guest
-</a>
 
 
-{% endblock %}
 
-{% block auth_links %}
-<p style="text-align: center;">
-    Don't have an account?
-    <a href="/signup" style="color: var(--primary);">Sign up</a>
-</p>
-{% endblock %}

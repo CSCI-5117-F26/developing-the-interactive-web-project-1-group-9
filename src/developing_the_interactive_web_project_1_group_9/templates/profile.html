@@ -151,6 +151,7 @@
             <hr>
 
             {% for post in posts %}
+            
             <article class="card post">
 
                 <!-- Author -->
@@ -160,7 +161,7 @@
                         <img src={{post.pfp}} alt="John Doe" class="post-avatar">
                         <div>
                             <strong>{{ user.nickname }}</strong>
-                            <time datetime="2026-10-17">{{post.time_created}}</time>
+                            <time>{{ post.time_created }}</time>
                         </div>
 
                     </div>
