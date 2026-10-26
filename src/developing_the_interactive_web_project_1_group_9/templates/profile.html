@@ -37,8 +37,21 @@
                 </button>
             
                 <dialog id="user-following" class="profile-dialog">
-                    <p>This is where users can see who they are following</p>
-                    <button commandfor="user-following" command="close">Close</button>
+                    <h3>Following</h3>
+                    {% if following_users %}
+                        <ul>
+                            {% for following_user in following_users %}
+                                <li>
+                                    <a href="/profile/{{ following_user[0] }}">{{ following_user[1] }} @{{ following_user[0] }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>Not following anyone</p>
+                    {% endif %}
+                    <button commandfor="user-following" command="close">
+                        Close
+                    </button>
                 </dialog>
             
                 <!-- Button and Dialog to show followers -->
@@ -48,8 +61,21 @@
                 </button>
             
                 <dialog id="user-followers" class="profile-dialog">
-                    <p>This is where users can view their followers</p>
-                    <button commandfor="user-followers" command="close">Close</button>
+                    <h3>Followers</h3>
+                    {% if followers %}
+                        <ul>
+                            {% for follower in followers %}
+                                <li>
+                                    <a href="/profile/{{ follower[0] }}">{{ follower[1] }} @{{ follower[0] }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No followers</p>
+                    {% endif %}
+                    <button commandfor="user-followers" command="close">
+                        Close
+                    </button>
                 </dialog>
             
             </div>
