@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="page feed">
+    <article class="card post">
+      
+      <!-- Author -->
+      <div class="post-header">
+          <div class="post-author">
+              <a href="{{ url_for('user_profile', username=post.username) }}">
+                  <img src="{{post.pfp}}" alt="Avatar" class="post-avatar">
+              </a>
+              <div>
+                  <!-- Uses 'post' matching the key from render_template -->
+                  <strong>{{ post.nickname }}</strong>
+                  <time datetime="2026-10-17">{{ post.time_created}}</time>
+              </div>
+          </div>
+          <a href="#" class="btn">Follow</a>
+      </div>
+
+      <!-- Post content -->
+      <p class="post-body">
+          {{ post.content }}
+      </p>
+
+
+      <!-- Interactions -->
+      <div class="post-actions">
+          <button type="button" class="post-action">
+              {{post.likes }} Happiness
+          </button>
+      </div>
+    </article>
+
+    {% for message in get_flashed_messages() %}
+            <div class="flash-alert" role="alert">
+                {{ message }}
+            
+                <button type="button" class="flash-alert-close" onclick="this.parentElement.remove()" aria-label="Close">
+                    &times;
+                </button>
+            </div>
+    {% endfor %}
+
+    <section>
+
+      <section class="card">
+        <form class="pure-form pure-form-stacked" action="/comment" method="POST">
+            <input type="hidden" name="post_id" value="{{post.post_id}}">
+            <label for="comment">Leave a comment!</label>
+
+            <textarea id="comment" name="comment" rows="3" placeholder="What a beautiful day for commenting!"></textarea>
+
+            <button type="submit" class="btn btn-primary">
+                Post
+            </button>
+
+
+        </form>
+    </section>
+
+    
+            
+      <h3>Comments</h3>
+      {% if comments == None %}
+        <h3> No Comments</h3>
+      {% else %}
+      
+      {% for comment in comments %}
+      <article class="card post">
+      
+          <!-- Author -->
+          <div class="post-header">
+      
+              <div class="post-author">
+      
+                  <a href="{{ url_for('user_profile', username=comment.username) }}">
+                      <img src="{{comment.pfp}}" alt="John Doe"
+                          class="post-avatar">
+                  </a>
+      
+                  <div>
+                      <strong>{{ comment.nickname }}</strong>
+                      <time datetime="2026-10-17">{{comment.time_created}}</time>
+                  </div>
+      
+              </div>
+      
+              <a href="#" class="btn">Follow</a>
+      
+          </div>
+      
+          <!-- Post content -->
+          <p class="post-body">
+              {{ comment.content }}
+          </p>
+      
+      
+          <!-- Interactions -->
+          <div class="post-actions">
+      
+              <button type="button" class="post-action" >
+                  {{comment.likes}} Happiness
+              </button>  
+          </div>
+      
+      </article>
+    {% endfor %}
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

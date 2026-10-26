@@ -7,14 +7,6 @@
 <div class="page feed">
 
     <!-- Header -->
-    <header class="topbar">
-        <a href="/profile" class="btn btn-primary">My Profile</a>
-
-        <form class="pure-form" role="search" action={{url_for('search')}} method="POST">
-            <input class="search" type="search" name="search" placeholder="Search people and posts">
-            <button type="submit" style="display: none;"></button>
-        </form>
-    </header>
 
     <!-- Feed -->
     <main>
@@ -47,150 +39,56 @@
 
             </form>
         </section>
-
-        <!-- Pinned Posts -->
-        <section>
-            <h3>Pinned Post</h3>
-
-            <article class="card post">
-            
-                <!-- Author -->
-                <div class="post-header">
-            
-                    <div class="post-author">
-            
-                        <a href="/profile">
-                            <img src="http://farm8.staticflickr.com/7448/8915936174_8d54ec76c6.jpg" alt="John Doe" class="post-avatar">
-                        </a>
-            
-                        <div>
-                            <strong>John Cena</strong>
-                            <time datetime="2026-10-17">Oct 17, 2026</time>
-                        </div>
-            
-                    </div>
-            
-                    <a href="#" class="btn">Follow</a>
-            
-                </div>
-            
-                <!-- Post content -->
-                <p class="post-body">
-                    I am happy! Today has been such a wonderful day.
-                    Just wanted to share a little sunshine with everyone.
-                </p>
-            
-                <span class="happiness">☀️ Joy</span>
-            
-                <!-- Interactions -->
-                <div class="post-actions">
-            
-                    <button type="button" class="post-action">
-                        ♡ 24 Happiness
-                    </button>
-            
-                    <button type="button" class="post-action">
-                        ◯ 12 Comments
-                    </button>
-            
-                </div>
-            
-            </article>
-        </section>
-
         <!-- Recent Posts -->
         <section>
+          
             <h3>Recent Posts</h3>
-
+            {% for post in posts %}
             <article class="card post">
             
                 <!-- Author -->
-                <div class="post-header">
-            
-                    <div class="post-author">
-            
-                        <a href="/profile">
-                            <img src="https://www.looper.com/img/gallery/the-untold-truth-of-bruce-wayne/bruce-wayne-is-actually-batmans-mask-1638569177.jpg" alt="John Doe"
-                                class="post-avatar">
-                        </a>
-            
-                        <div>
-                            <strong>Bruce Wayne</strong>
-                            <time datetime="2026-10-17">Oct 17, 2026</time>
-                        </div>
-            
-                    </div>
-            
-                    <a href="#" class="btn">Follow</a>
-            
-                </div>
-            
-                <!-- Post content -->
-                <p class="post-body">
-                    Feels like a good day for something?
-                </p>
-            
-                <span class="happiness">🌦️ Great</span>
-            
-                <!-- Interactions -->
-                <div class="post-actions">
-            
-                    <button type="button" class="post-action">
-                        ♡ 24 Happiness
-                    </button>
-            
-                    <button type="button" class="post-action">
-                        ◯ 12 Comments
-                    </button>
-            
-                </div>
+                  <div class="post-header">
+              
+                      <div class="post-author">
+              
+                          <a href="{{ url_for('user_profile', username=post.username) }}">
+                              <img src={{post.pfp}} alt="John Doe"
+                                  class="post-avatar">
+                          </a>
+              
+                          <div>
+                              <strong>{{ post.nickname }}</strong>
+                              <time datetime="2026-10-17">{{post.time_created}}</time>
+                          </div>
+              
+                      </div>
+              
+                      <a href="#" class="btn">Follow</a>
+              
+                  </div>
+              
+                  <!-- Post content -->
+                  <p class="post-body">
+                      {{ post.content }}
+                  </p>
+              
+              
+                  <!-- Interactions -->
+                  <div class="post-actions">
+              
+                      <button type="button" class="post-action" >
+                          {{post.likes}} Happiness
+                      </button>
+              
+                      <a class="post-action" href="{{ url_for('post_page', post_id=post.post_id) }}">
+                        {{post.comment_count}} Comments
+                      </a>
+              
+                  </div>
             
             </article>
 
-            <article class="card post">
-            
-                <!-- Author -->
-                <div class="post-header">
-            
-                    <div class="post-author">
-            
-                        <a href="/profile">
-                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRC9BHG38kwC4ZcCU55wMoi6Z3kNDqcccIAKE6s56li6a4jiWnGl45lJhZ5&s=10" alt="Mr Kent"
-                                class="post-avatar">
-                        </a>
-            
-                        <div>
-                            <strong>Clark Kent</strong>
-                            <time datetime="2026-10-17">Oct 17, 2026</time>
-                        </div>
-            
-                    </div>
-            
-                    <a href="#" class="btn">Follow</a>
-            
-                </div>
-            
-                <!-- Post content -->
-                <p class="post-body">
-                    Sunshine and rainbow blah blah blah 
-                </p>
-            
-                <span class="happiness">☀️ Excited</span>
-            
-                <!-- Interactions -->
-                <div class="post-actions">
-            
-                    <button type="button" class="post-action">
-                        ♡ 24 Happiness
-                    </button>
-            
-                    <button type="button" class="post-action">
-                        ◯ 12 Comments
-                    </button>
-            
-                </div>
-            
-            </article>
+          {% endfor %}
         </section>
 
 
@@ -198,5 +96,7 @@
 
 
 </div>
+
+
 
 {% endblock %}

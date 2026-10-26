@@ -15,6 +15,20 @@
 </head>
 
 <body>
+  <!-- Header -->
+  <div class="page feed">
+    <header class="topbar">
+      <a href="/profile" class="btn btn-primary">My Profile</a>
+      <a href="/feeds" class="btn btn-primary">Main feed</a>
+      
+
+      <form class="pure-form" role="search" action={{url_for('search')}} method="POST">
+        <input class="search" type="search" name="search" placeholder="Search people and posts">
+        <button type="submit" style="display: none;"></button>
+      </form>
+    </header>
+  </div>
+
     {% block content %}
     {% endblock %}
 </body>
