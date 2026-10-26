@@ -74,25 +74,47 @@ async def feeds():
     user = await auth0.get_user(store_options)
     # Whatever logic we use to personalize feed to user goes here
     posts = get_posts_with_usernames()
-    if user:
-        userid = get_user_by_auth0(user["sub"])
-        for post in posts:
-            post["liked"] = has_liked(userid, post["post_id"])
-    else:
-        for post in posts:
-            post["liked"] = False
+    if posts:
+        if user:
+            userid = get_user_by_auth0(user["sub"])
+            for post in posts:
+                post["liked"] = has_liked(userid, post["post_id"])
+        else:
+            for post in posts:
+                post["liked"] = False
+
+        page = request.args.get('page', 1, type=int)
+        per_page = 5
+        start = (page - 1) * per_page
+        end = start + per_page
+        total_pages = (len(posts) + per_page - 1) // per_page
+        posts_on_page = posts[start:end]
+        return render_template("feeds.html", posts=posts_on_page, total_pages = total_pages, page=page)
     return render_template("feeds.html", posts=posts)
 
 
-@app.route('/search', methods=["POST"])
+@app.route('/search', methods=["POST", "GET"])
 async def search():
-    search_term = request.form.get("search")
-    print("search term")
-    print (search_term)
+    if request.method == 'POST':
+        search_term = request.form.get("search")
+        print("search term")
+        print (search_term)
+    else:
+        # request comes from pagination
+        search_term = request.args.get('keyword')
+    
     search_results = search_database(search_term, 20)
     print("search results")
     print (search_results)
     search_type = search_term.startswith('@')
+    if search_results:
+        page = request.args.get('page', 1, type=int)
+        per_page = 5
+        start = (page - 1) * per_page
+        end = start + per_page
+        total_pages = (len(search_results) + per_page - 1) // per_page
+        results_on_page = search_results[start:end]
+        return render_template("search.html", search_results=results_on_page, profile=search_type, search_term=search_term, total_pages = total_pages, page=page,pagination=True)
     return render_template("search.html", search_results=search_results, profile=search_type, search_term=search_term)
 
 # default profile call routes to current auth0 users profile
@@ -129,16 +151,24 @@ async def user_profile(username):
             following = is_following(current_user_id, user["id"])
 
     posts = get_posts_by_id(user["id"])
-    if user:
-        userid = get_user_by_auth0(current_user["sub"])
-        for post in posts:
-            post["liked"] = has_liked(userid, post["post_id"])
-    else:
-        for post in posts:
-            post["liked"] = False
     following_users = get_following(user["id"])
     followers = get_followers(user["id"])
-    
+    if posts:
+        if user:
+            userid = get_user_by_auth0(current_user["sub"])
+            for post in posts:
+                post["liked"] = has_liked(userid, post["post_id"])
+        else:
+            for post in posts:
+                post["liked"] = False
+        
+        page = request.args.get('page', 1, type=int)
+        per_page = 5
+        start = (page - 1) * per_page
+        end = start + per_page
+        total_pages = (len(posts) + per_page - 1) // per_page
+        posts_on_page = posts[start:end]
+        return render_template("profile.html", user=user, is_owner=is_owner, following=following, following_users=following_users, followers=followers, posts=posts_on_page, total_pages = total_pages, page=page)
     return render_template("profile.html", user=user, is_owner=is_owner, following=following, following_users=following_users, followers=followers, posts=posts)
 
 @app.route("/profile/edit", methods=["POST"])
@@ -199,6 +229,14 @@ async def post_page(post_id):
     if auth_user:
         userid = get_user_by_auth0(auth_user["sub"])
         liked = has_liked(userid, post_id)
+    if comments:
+        page = request.args.get('page', 1, type=int)
+        per_page = 5
+        start = (page - 1) * per_page
+        end = start + per_page
+        total_pages = (len(comments) + per_page - 1) // per_page
+        comments_on_page = comments[start:end]
+        return render_template("post.html", post=post, comments=comments_on_page, liked=liked, total_pages = total_pages, page=page, post_id=post_id)
     return render_template("post.html", post=post, comments=comments, liked=liked)
 
 @app.route("/post/<int:post_id>/edit", methods=["POST"])

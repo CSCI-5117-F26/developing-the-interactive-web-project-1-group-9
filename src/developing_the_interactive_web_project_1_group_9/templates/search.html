@@ -9,85 +9,108 @@
 
     <!-- Body -->
     <main>
-    {% if search_results | length == 0 %}
+        {% if search_results | length == 0 %}
         <p>Oh no! There were no results found! Maybe try a searching something else?</p>
-    {% elif profile %}
+        {% elif profile %}
         <!-- Render list of found profiles -->
-         <div class="pure-menu">
+        <div class="pure-menu">
             <!-- Make link to profile for each profile -->
-             <span class="pure-menu-heading">Profiles</span>
-             <ul class="pure-menu-list">
+            <span class="pure-menu-heading">Profiles</span>
+            <ul class="pure-menu-list">
                 {% for user_id, username, bio in search_results %}
-                    <li class="pure-menu-item">
-                        <a href={{'/profile/{}'.format(username)}} class="pure-menu-link">
-                            <article class="card post">
-                                <div class="post-header">
-                                    <div class="post-author">
-                                        <img src={{'/pfp/{}'.format(user_id)}} " class="post-avatar">
-                                        <strong>{{ username }}</strong>
-                                    </div>
+                <li class="pure-menu-item">
+                    <a href={{'/profile/{}'.format(username)}} class="pure-menu-link">
+                        <article class="card post">
+                            <div class="post-header">
+                                <div class="post-author">
+                                    <img src={{'/pfp/{}'.format(user_id)}} " class=" post-avatar">
+                                    <strong>{{ username }}</strong>
                                 </div>
+                            </div>
                             <p class="post-body">{{ bio }}</p>
-                            </article>
-                        </a>
-                    </li>
+                        </article>
+                    </a>
+                </li>
                 {% endfor %}
-             </ul>
-         </div>
-    {% else %}
+            </ul>
+            {% if page > 1 %}
+            <a href="{{url_for('search',keyword=search_term, page=page-1)}}">
+                <button class="btn btn-primary">Previous</button>
+            </a>
+            {% endif %}
+            <span>Page {{page}} of {{total_pages}}</span>
+
+            {% if page < total_pages %} <a href="{{url_for('search',keyword=search_term,page=page + 1)}}">
+                <button class="btn btn-primary">Next</button>
+                </a>
+                {% endif %}
+        </div>
+        {% else %}
         <!-- Render list of posts found, yoinked from Ali's feeds branch -->
-         <section>
-          
+        <section>
+
             <h3>Posts about {{ search_term }}</h3>
             {% for post in search_results %} <!-- Changed posts to post, rest should be the same in final site-->
             <article class="card post">
-            
+
                 <!-- Author -->
                 <div class="post-header">
-            
+
                     <div class="post-author">
-            
+
                         <a href="/profile">
-                            <img src="https://www.looper.com/img/gallery/the-untold-truth-of-bruce-wayne/bruce-wayne-is-actually-batmans-mask-1638569177.jpg" alt="John Doe"
-                                class="post-avatar">
+                            <img src="https://www.looper.com/img/gallery/the-untold-truth-of-bruce-wayne/bruce-wayne-is-actually-batmans-mask-1638569177.jpg"
+                                alt="John Doe" class="post-avatar">
                         </a>
-            
+
                         <div>
                             <strong>@{{ post[2] }}</strong>
                             <time datetime="2026-10-17">{{post[5]}}</time>
                         </div>
-            
+
                     </div>
-            
+
                     <a href="#" class="btn">Follow</a>
-            
+
                 </div>
-            
+
                 <!-- Post content -->
                 <p class="post-body">
                     {{ post[1] }}
                 </p>
-            
-            
+
+
                 <!-- Interactions -->
                 <div class="post-actions">
-            
-                    <button type="button" class="post-action" >
+
+                    <button type="button" class="post-action">
                         {{post[3]}} Happiness
                     </button>
-                    
+
                     <!--PLACE HOLDER HREF, OG DOES NOT WORK YET-->
                     <a class="post-action" href="#">
-                      {{post[4]}} Comments
+                        {{post[4]}} Comments
                     </a>
-            
+
                 </div>
-            
+
             </article>
 
-          {% endfor %}
+            {% endfor %}
         </section>
-    {% endif %}
+        {% if page > 1 %}
+        <a href="{{url_for('search',keyword=search_term, page=page-1)}}">
+            <button class="btn btn-primary">Previous</button>
+        </a>
+        {% endif %}
+        <span>Page {{page}} of {{total_pages}}</span>
+
+        {% if page < total_pages %} <a href="{{url_for('search',keyword=search_term,page=page + 1)}}">
+            <button class="btn btn-primary">Next</button>
+            </a>
+            {% endif %}
+            {% endif %}
+
     </main>
 </div>
 
