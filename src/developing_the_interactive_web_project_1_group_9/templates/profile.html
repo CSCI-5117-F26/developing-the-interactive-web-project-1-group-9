@@ -49,8 +49,7 @@
                         <ul>
                             {% for following_user in following_users %}
                                 <li>
-                                    <a href="/profile/{{ following_user[0] }}">{{ following_user[1] }}</a>
-                                    <p>@{{ following_user[0] }}</p>
+                                    <a href="/profile/{{ following_user[0] }}">{{ following_user[1] }} @{{ following_user[0] }}</a>
                                 </li>
                             {% endfor %}
                         </ul>
@@ -70,12 +69,11 @@
             
                 <dialog id="user-followers" class="profile-dialog">
                     <h3>Followers</h3>
-                    {% if followerers %}
+                    {% if followers %}
                         <ul>
                             {% for follower in followers %}
                                 <li>
-                                    <a href="/profile/{{ follower[0] }}">{{ follower[1] }}</a>
-                                    <p>@{{ follower[0] }}</p>
+                                    <a href="/profile/{{ follower[0] }}">{{ follower[1] }} @{{ follower[0] }}</a>
                                 </li>
                             {% endfor %}
                         </ul>
