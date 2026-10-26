@@ -6,7 +6,7 @@
 
 <div class="page profile" data-view="owner">
 
-    
+
 
     <div class="pure-g">
 
@@ -35,7 +35,7 @@
                     <span>Following</span>
                     <strong> {{ user.following_count }}</strong>
                 </button>
-            
+
                 <dialog id="user-following" class="profile-dialog">
                     <h3>Following</h3>
                     {% if following_users %}
@@ -53,13 +53,13 @@
                         Close
                     </button>
                 </dialog>
-            
+
                 <!-- Button and Dialog to show followers -->
                 <button command="show-modal" commandfor="user-followers" class="btn btn-block stat">
                     <span>Followers</span>
                     <strong> {{ user.follower_count }}</strong>
                 </button>
-            
+
                 <dialog id="user-followers" class="profile-dialog">
                     <h3>Followers</h3>
                     {% if followers %}
@@ -77,7 +77,7 @@
                         Close
                     </button>
                 </dialog>
-            
+
             </div>
             <p></p>
 
@@ -90,7 +90,7 @@
                 <!-- Dialog to show edit profile -->
                 <dialog id="edit-profile" class="profile-dialog">
                     <form action="/profile/edit" method="POST" enctype="multipart/form-data">
-                       <input type="text" name="nickname" maxlength="50">
+                        <input type="text" name="nickname" maxlength="50">
                         <br>
                         <label>Bio</label>
                         <textarea name="bio"></textarea>
@@ -107,19 +107,19 @@
                 {% endif %}
 
                 {% if not is_owner %}
-                    {% if following %}
-                        <form action="/unfollow/{{ user.username }}" method="POST">
-                            <button type="submit" class="btn btn-block">
-                                Unfollow
-                            </button>
-                        </form>
-                        {% else %}
-                        <form action="/follow/{{ user.username }}" method="POST">
-                            <button type="submit" class="btn btn-primary btn-block">
-                                Follow
-                            </button>
-                        </form>
-                    {% endif %}
+                {% if following %}
+                <form action="/unfollow/{{ user.username }}" method="POST">
+                    <button type="submit" class="btn btn-block">
+                        Unfollow
+                    </button>
+                </form>
+                {% else %}
+                <form action="/follow/{{ user.username }}" method="POST">
+                    <button type="submit" class="btn btn-primary btn-block">
+                        Follow
+                    </button>
+                </form>
+                {% endif %}
                 {% endif %}
 
                 <a href="/signin" class="btn btn-block" data-show="guest">
@@ -135,15 +135,14 @@
                 {% endif %}
             </div>
 
-           
+
 
         </aside>
 
         <!-- RIGHT -->
         <main class="pure-u-1 pure-u-md-3-4">
             <div class="banner">
-                <img src="{{user.banner}}" alt="John Doe"
-                    >
+                <img src="{{user.banner}}" alt="John Doe">
             </div>
 
             <hr>
@@ -151,23 +150,32 @@
             <hr>
 
             {% for post in posts %}
+            
             <article class="card post">
             
-                <!-- Author -->
                 <div class="post-header">
-            
                     <div class="post-author">
-                          <img src={{post.pfp}} alt="John Doe"
-                              class="post-avatar">
+                        <img src="{{ post.pfp }}" class="post-avatar" alt="Avatar">
+            
                         <div>
                             <strong>{{ user.nickname }}</strong>
-                            <time datetime="2026-10-17">{{post.time_created}}</time>
+                            <time>{{ post.time_created }}</time>
                         </div>
-            
                     </div>
             
-                    <a href="#" class="btn">Follow</a>
+                    <!-- Edit dropdown -->
+                    <details class="dropdown">
+                        <summary class="btn">•••</summary>
             
+                        <ul class="pure-menu-list">
+                            <li class="pure-menu-item">
+                                <button type="button" class="pure-menu-link" commandfor="edit-post-{{ post.post_id }}"
+                                    command="show-modal">
+                                    Edit
+                                </button>
+                            </li>
+                        </ul>
+                    </details>
                 </div>
             
                 <!-- Post content -->
@@ -189,14 +197,39 @@
                     {% endif %}
 
                     <a class="post-action" href="{{ url_for('post_page', post_id=post.post_id) }}">
-                      {{post.comment_count}} Comments
+                        {{ post.comment_count }} Comments
                     </a>
-            
                 </div>
             
             </article>
-
-          {% endfor %}
+            
+            <!-- Edit dialog -->
+            <dialog id="edit-post-{{ post.post_id }}" class="profile-dialog">
+                <section class="card">
+                    <form class="pure-form pure-form-stacked" action="{{ url_for('update_post', post_id=post.post_id) }}"
+                        method="POST">
+            
+                        <label for="title-{{ post.post_id }}">
+                            Edit your post
+                        </label>
+                        <p></p>
+            
+                        <input type="text" id="title-{{ post.post_id }}" name="title" value="{{ post.title }}" required>
+            
+                        <textarea id="content-{{ post.post_id }}" name="post" rows="3" required>{{ post.content }}</textarea>
+            
+                        <button type="submit" class="btn btn-primary">
+                            Save Changes
+                        </button>
+            
+                        <button type="button" class="btn" commandfor="edit-post-{{ post.post_id }}" command="close">
+                            Cancel
+                        </button>
+                    </form>
+                </section>
+            </dialog>
+            
+            {% endfor %}
 
         </main>
     </div>
