@@ -211,6 +211,37 @@ async def submit_post():
         
     return redirect(url_for('feeds'))
 
+@app.route("/comment", methods=['POST'])
+async def submit_comment():
+    auth0 = init_auth0()
+    store_options = {"request": request}
+    user = await auth0.get_user(store_options)
+
+    if not user:
+        return redirect(url_for('login'))
+    
+    user_id = get_user_by_auth0(user["sub"])
+    comment = request.form.get("comment")
+    postid = request.form.get("post_id")
+    if not comment:
+        flash("Comment content is required.")
+        return redirect(request.referrer)
+
+    # moderate both title and content
+    approved_comment = moderate_post(comment)
+    
+    if approved_comment is True:
+        create_comment(user_id, postid, comment)
+        flash("Comment created successfully!")
+    else:
+        flash("Your comment was not successful")
+        
+    return redirect(request.referrer)
+
+
+
+
+
 @app.route("/follow/<username>", methods=["POST"])
 async def follow(username):
     auth0 = init_auth0()

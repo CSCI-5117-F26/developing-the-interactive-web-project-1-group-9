@@ -1,5 +1,7 @@
 import psycopg
 import os
+from datetime import timedelta
+
 
 #TODO: find a better way to organize these, post edit/delete, comment edit/delete, like/double liking posts/comments,
 #      following other users, reporting posts and admin side report management, check if user owns post
@@ -223,7 +225,8 @@ def get_post(postid):
                      posts.content,
                      posts.likes_count,
                      users.username,
-                     posts.post_created
+                     posts.post_created,
+                     users.nickname
                   FROM posts 
                   JOIN users on posts.user_id = users.id
                   WHERE posts.id = %s; """, (postid,)
@@ -239,8 +242,9 @@ def get_post(postid):
         "content": post[2],
         "likes": post[3],
         "username": post[4],
-        "time_created": post[5].strftime("%m/%d/%y"),
-        "pfp": f"/pfp/{post[1]}"
+        "time_created": (post[5] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
+        "pfp": f"/pfp/{post[1]}",
+        "nickname": post[6]
     }
 
 def get_posts():
@@ -265,9 +269,11 @@ def get_posts_with_usernames():
         posts.likes_count,
         posts.comment_count,
         posts.post_created,
-        posts.user_id
+        posts.user_id,
+        users.nickname
       FROM posts
-      JOIN users ON posts.user_id = users.id;
+      JOIN users ON posts.user_id = users.id
+      ORDER BY post_created DESC;
       """
     )
     posts = cur.fetchall()
@@ -281,8 +287,9 @@ def get_posts_with_usernames():
           "username": post[2],
           "likes": post[3],
           "comment_count": post[4],
-          "time_created": post[5].strftime("%m/%d/%y"),
-          "pfp": f"/pfp/{post[6]}"
+          "time_created": (post[5] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
+          "pfp": f"/pfp/{post[6]}",
+          "nickname": post[7]
       }
       for post in posts
     ]
@@ -300,7 +307,8 @@ def get_posts_by_id(userid):
         posts.post_created,
         posts.user_id
       FROM posts
-      WHERE posts.user_id = %s;""", (userid,)
+      WHERE posts.user_id = %s
+      ORDER BY post_created DESC;""", (userid,)
     )
     posts = cur.fetchall()
     if not posts:
@@ -311,7 +319,7 @@ def get_posts_by_id(userid):
           "content": post[1],
           "likes": post[2],
           "comment_count": post[3],
-          "time_created": post[4].strftime("%m/%d/%y"),
+          "time_created": (post[4] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
           "pfp": f"/pfp/{post[5]}"
       }
       for post in posts
@@ -369,10 +377,12 @@ def get_comments(postid):
         users.username,
         comments.likes_count,
         comments.comment_created,
-        users.id
+        users.id,
+        users.nickname
       FROM comments
       JOIN users ON comments.user_id = users.id
-      WHERE post_id = (%s);
+      WHERE post_id = (%s)
+      ORDER BY comment_created DESC;
       """, (postid,)
     )
     comments = cur.fetchall()
@@ -386,8 +396,9 @@ def get_comments(postid):
           "content": comment[1],
           "username": comment[2],
           "likes": comment[3],
-          "time_created": comment[4].strftime("%m/%d/%y"),
-          "pfp": f"/pfp/{comment[5]}"
+          "time_created": (comment[4] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
+          "pfp": f"/pfp/{comment[5]}",
+          "nickname": comment[6]
       }
       for comment in comments
     ]
@@ -434,7 +445,7 @@ def search_database(search_term, fetch_amount):
         posts = cur.fetchall()
         if posts:
             posts = [
-            [row[0], row[1], row[2], row[3], row[4], row[5].strftime("%m/%d/%y")]
+            [row[0], row[1], row[2], row[3], row[4], row[5].strftime("%m/%d/%y %I:%M:%S %p")]
             for row in posts
         ]
         print("searched posts")

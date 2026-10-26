@@ -134,7 +134,7 @@
                           <img src={{post.pfp}} alt="John Doe"
                               class="post-avatar">
                         <div>
-                            <strong>@{{ user.username }}</strong>
+                            <strong>{{ user.nickname }}</strong>
                             <time datetime="2026-10-17">{{post.time_created}}</time>
                         </div>
             
@@ -149,7 +149,6 @@
                     {{ post.content }}
                 </p>
             
-                <span class="happiness">🌦️ Great</span>
             
                 <!-- Interactions -->
                 <div class="post-actions">
