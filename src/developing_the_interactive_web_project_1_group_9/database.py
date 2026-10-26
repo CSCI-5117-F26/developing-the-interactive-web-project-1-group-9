@@ -1,5 +1,7 @@
 import psycopg
 import os
+from datetime import timedelta
+
 
 #TODO: find a better way to organize these, post edit/delete, comment edit/delete, like/double liking posts/comments,
 #      following other users, reporting posts and admin side report management, check if user owns post
@@ -203,6 +205,26 @@ def is_following(follower_id, following_id):
         return result
     return None
 
+def get_followers(userid):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""SELECT u.username, u.nickname FROM follows f 
+    JOIN users u ON f.follower_id = u.id WHERE f.following_id = %s ORDER BY u.username;""", (userid,))
+    following = cur.fetchall()
+    cur.close()
+    conn.close()
+    return following
+
+def get_following(userid):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""SELECT u.username, u.nickname FROM follows f 
+    JOIN users u ON f.following_id = u.id WHERE f.follower_id = %s ORDER BY u.username;""", (userid,))
+    following = cur.fetchall()
+    cur.close()
+    conn.close()
+    return following
+
 def get_username(userid):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
@@ -224,7 +246,8 @@ def get_post(postid):
                      posts.content,
                      posts.likes_count,
                      users.username,
-                     posts.post_created
+                     posts.post_created,
+                     users.nickname
                   FROM posts 
                   JOIN users on posts.user_id = users.id
                   WHERE posts.id = %s; """, (postid,)
@@ -241,8 +264,9 @@ def get_post(postid):
         "content": post[3],
         "likes": post[4],
         "username": post[5],
-        "time_created": post[6].strftime("%m/%d/%y"),
-        "pfp": f"/pfp/{post[1]}"
+        "time_created": (post[6] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
+        "pfp": f"/pfp/{post[1]}",
+        "nickname": post[6]
     }
 
 def get_posts():
@@ -267,9 +291,11 @@ def get_posts_with_usernames():
         posts.likes_count,
         posts.comment_count,
         posts.post_created,
-        posts.user_id
+        posts.user_id,
+        users.nickname
       FROM posts
-      JOIN users ON posts.user_id = users.id;
+      JOIN users ON posts.user_id = users.id
+      ORDER BY post_created DESC;
       """
     )
     posts = cur.fetchall()
@@ -283,8 +309,9 @@ def get_posts_with_usernames():
           "username": post[2],
           "likes": post[3],
           "comment_count": post[4],
-          "time_created": post[5].strftime("%m/%d/%y"),
-          "pfp": f"/pfp/{post[6]}"
+          "time_created": (post[5] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
+          "pfp": f"/pfp/{post[6]}",
+          "nickname": post[7]
       }
       for post in posts
     ]
@@ -303,7 +330,8 @@ def get_posts_by_id(userid):
         posts.post_created,
         posts.user_id
       FROM posts
-      WHERE posts.user_id = %s;""", (userid,)
+      WHERE posts.user_id = %s
+      ORDER BY post_created DESC;""", (userid,)
     )
     posts = cur.fetchall()
     if not posts:
@@ -315,7 +343,7 @@ def get_posts_by_id(userid):
           "content": post[2],
           "likes": post[3],
           "comment_count": post[4],
-          "time_created": post[5].strftime("%m/%d/%y"),
+          "time_created": (post[5] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
           "pfp": f"/pfp/{post[6]}"
       }
       for post in posts
@@ -373,10 +401,12 @@ def get_comments(postid):
         users.username,
         comments.likes_count,
         comments.comment_created,
-        users.id
+        users.id,
+        users.nickname
       FROM comments
       JOIN users ON comments.user_id = users.id
-      WHERE post_id = (%s);
+      WHERE post_id = (%s)
+      ORDER BY comment_created DESC;
       """, (postid,)
     )
     comments = cur.fetchall()
@@ -390,8 +420,9 @@ def get_comments(postid):
           "content": comment[1],
           "username": comment[2],
           "likes": comment[3],
-          "time_created": comment[4].strftime("%m/%d/%y"),
-          "pfp": f"/pfp/{comment[5]}"
+          "time_created": (comment[4] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
+          "pfp": f"/pfp/{comment[5]}",
+          "nickname": comment[6]
       }
       for comment in comments
     ]
@@ -438,7 +469,7 @@ def search_database(search_term, fetch_amount):
         posts = cur.fetchall()
         if posts:
             posts = [
-            [row[0], row[1], row[2], row[3], row[4], row[5].strftime("%m/%d/%y")]
+            [row[0], row[1], row[2], row[3], row[4], row[5].strftime("%m/%d/%y %I:%M:%S %p")]
             for row in posts
         ]
         print("searched posts")
@@ -448,3 +479,36 @@ def search_database(search_term, fetch_amount):
         conn.close()
         return posts
 
+#like management
+def like_post(userid, postid):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""INSERT INTO likes (user_id, post_id) VALUES (%s, %s) ON CONFLICT DO NOTHING RETURNING user_id;""", (userid, postid))
+    not_liked = cur.fetchone()
+    if not_liked: # checks if already liked
+        cur.execute("""UPDATE posts SET likes_count = likes_count + 1 WHERE id = %s;""", (postid,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def unlike_post(userid, postid):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""DELETE FROM likes WHERE user_id = %s AND post_id = %s RETURNING user_id;""", (userid, postid))
+    liked = cur.fetchone()
+    if liked:
+        cur.execute("""UPDATE posts SET likes_count = GREATEST(likes_count - 1, 0) WHERE id = %s;""", (postid,)) # cant go negative
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def has_liked(userid, postid):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""SELECT 1 FROM likes WHERE user_id = %s AND post_id = %s;""", (userid, postid))
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    if result:
+        return True
+    return False

@@ -37,8 +37,21 @@
                 </button>
 
                 <dialog id="user-following" class="profile-dialog">
-                    <p>This is where users can see who they are following</p>
-                    <button commandfor="user-following" command="close">Close</button>
+                    <h3>Following</h3>
+                    {% if following_users %}
+                        <ul>
+                            {% for following_user in following_users %}
+                                <li>
+                                    <a href="/profile/{{ following_user[0] }}">{{ following_user[1] }} @{{ following_user[0] }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>Not following anyone</p>
+                    {% endif %}
+                    <button commandfor="user-following" command="close">
+                        Close
+                    </button>
                 </dialog>
 
                 <!-- Button and Dialog to show followers -->
@@ -48,8 +61,21 @@
                 </button>
 
                 <dialog id="user-followers" class="profile-dialog">
-                    <p>This is where users can view their followers</p>
-                    <button commandfor="user-followers" command="close">Close</button>
+                    <h3>Followers</h3>
+                    {% if followers %}
+                        <ul>
+                            {% for follower in followers %}
+                                <li>
+                                    <a href="/profile/{{ follower[0] }}">{{ follower[1] }} @{{ follower[0] }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No followers</p>
+                    {% endif %}
+                    <button commandfor="user-followers" command="close">
+                        Close
+                    </button>
                 </dialog>
 
             </div>
@@ -132,7 +158,7 @@
                         <img src="{{ post.pfp }}" class="post-avatar" alt="Avatar">
             
                         <div>
-                            <strong>@{{ user.username }}</strong>
+                            <strong>{{ user.nickname }}</strong>
                             <time>{{ post.time_created }}</time>
                         </div>
                     </div>
@@ -157,14 +183,19 @@
                     {{ post.content }}
                 </p>
             
-                <span class="happiness">🌦️ Great</span>
             
                 <!-- Interactions -->
                 <div class="post-actions">
-                    <button type="button" class="post-action">
-                        {{ post.likes }} Happiness
-                    </button>
-            
+                    {% if post.liked %}
+                    <form action="/unlike/{{ post.post_id }}" method="POST">
+                        <button type="submit" class="post-action">🚫👍 {{ post.likes }} Happiness</button>
+                    </form>
+                    {% else %}
+                    <form action="/like/{{ post.post_id }}" method="POST">
+                        <button type="submit" class="post-action">👍 {{ post.likes }} Happiness</button>
+                    </form>
+                    {% endif %}
+
                     <a class="post-action" href="{{ url_for('post_page', post_id=post.post_id) }}">
                         {{ post.comment_count }} Comments
                     </a>
