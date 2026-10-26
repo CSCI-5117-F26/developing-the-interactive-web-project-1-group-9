@@ -76,13 +76,19 @@
                   <!-- Interactions -->
                   <div class="post-actions">
               
-                      <button type="button" class="post-action" >
-                          {{post.likes}} Happiness
-                      </button>
-              
-                      <a class="post-action" href="{{ url_for('post_page', post_id=post.post_id) }}">
-                        {{post.comment_count}} Comments
-                      </a>
+                    {% if post.liked %}
+                    <form action="/unlike/{{ post.post_id }}" method="POST">
+                        <button type="submit" class="post-action">🚫👍 {{ post.likes }} Happiness</button>
+                    </form>
+                    {% else %}
+                    <form action="/like/{{ post.post_id }}" method="POST">
+                        <button type="submit" class="post-action">👍 {{ post.likes }} Happiness</button>
+                    </form>
+                    {% endif %}
+            
+                    <a class="post-action" href="{{ url_for('post_page', post_id=post.post_id) }}">
+                    {{post.comment_count}} Comments
+                    </a>
               
                   </div>
             

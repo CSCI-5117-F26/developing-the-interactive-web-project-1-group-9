@@ -474,3 +474,37 @@ def search_database(search_term, fetch_amount):
         cur.close()
         conn.close()
         return posts
+
+#like management
+def like_post(userid, postid):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""INSERT INTO likes (user_id, post_id) VALUES (%s, %s) ON CONFLICT DO NOTHING RETURNING user_id;""", (userid, postid))
+    not_liked = cur.fetchone()
+    if not_liked: # checks if already liked
+        cur.execute("""UPDATE posts SET likes_count = likes_count + 1 WHERE id = %s;""", (postid,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def unlike_post(userid, postid):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""DELETE FROM likes WHERE user_id = %s AND post_id = %s RETURNING user_id;""", (userid, postid))
+    liked = cur.fetchone()
+    if liked:
+        cur.execute("""UPDATE posts SET likes_count = GREATEST(likes_count - 1, 0) WHERE id = %s;""", (postid,)) # cant go negative
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def has_liked(userid, postid):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""SELECT 1 FROM likes WHERE user_id = %s AND post_id = %s;""", (userid, postid))
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    if result:
+        return True
+    return False
