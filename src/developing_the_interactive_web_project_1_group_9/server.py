@@ -202,6 +202,7 @@ async def update_profile():
 
     return redirect("/profile")
 
+
 # trying with just jpeg for now for simplicity
 @app.route("/pfp/<int:userid>")
 def pfp(userid):
@@ -260,24 +261,44 @@ async def update_post(post_id):
         abort(403)
 
     # Get form data
-    title = request.form.get("title", "").strip()
-    content = request.form.get("post", "").strip()
-
-    if not title or not content:
-        flash("Title and post content are required.")
-        return redirect(url_for("feeds"))
+    post = request.form.get("post", "").strip()
 
     # Moderate updated content
-    approved_title = moderate_post(title)
-    approved_content = moderate_post(content)
+    approved_post = moderate_post(post)
 
-    if approved_title is True and approved_content is True:
-        edit_post(post_id, title, content)
+    if approved_post is True:
+        edit_post(post_id, post)
         flash("Post updated successfully!")
     else:
         flash("Your changes could not be approved.")
 
-    return redirect(url_for("feeds"))
+    return redirect("/profile")
+
+@app.route("/post/<int:post_id>/delete", methods=["POST"])
+async def delete_post(post_id):
+    auth0 = init_auth0()
+    store_options = {"request": request}
+    user = await auth0.get_user(store_options)
+
+    if not user:
+        return redirect(url_for("login"))
+
+    user_id = get_user_by_auth0(user["sub"])
+
+    # Get the specific post
+    existing_post = get_post(post_id)
+
+    if not existing_post:
+        abort(404)
+
+    # Verify post ownership
+    if existing_post["user_id"] != user_id:
+        abort(403)
+
+    delete_post_db(user_id, post_id)
+    flash("Post deleted successfully!.")
+    return redirect("/profile")
+
 
 @app.route("/post", methods=['POST'])
 async def submit_post():
@@ -291,21 +312,21 @@ async def submit_post():
     user_id = get_user_by_auth0(user["sub"])
 
     # get form data
-    title = request.form.get("title")
+    # title = request.form.get("title")
     post = request.form.get("post")
 
-    if not title or not post:
-        flash("Title and post content are required.")
+    if not post:
+        flash("Content is required to make a post.")
         return redirect(url_for("feeds"))
 
     # moderate both title and content
-    approved_title = moderate_post(title)
+    # approved_title = moderate_post(title)
     approved_post = moderate_post(post)
     
-    if approved_title is True and approved_post is True:
-        create_post(user_id, title, post)
+    if approved_post is True:
+        create_post(user_id, post)
         flash("Post created successfully!")
-    elif approved_title is False and approved_post is False:
+    elif approved_post is False:
         flash("Your post was rejected!")
     else:
         flash("Your post was not successful")
