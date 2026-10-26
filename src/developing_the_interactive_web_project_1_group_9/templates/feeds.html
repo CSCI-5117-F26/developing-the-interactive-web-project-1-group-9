@@ -43,6 +43,9 @@
         <section>
 
             <h3>Recent Posts</h3>
+            {% if posts == None %}
+            <h3> No Recent Posts</h3>
+        {% else %}
             {% for post in posts %}
             <article class="card post">
 
@@ -94,20 +97,21 @@
             </article>
 
             {% endfor %}
-        </section>
+            {% if page > 1 %}
 
-        {% if page > 1 %}
-
-        <a href="{{url_for('feeds', page=page-1)}}">
-            <button class="btn btn-primary">Previous</button>
-        </a>
-        {% endif %}
-        <span>Page {{page}} of {{total_pages}}</span>
-
-        {% if page < total_pages %} <a href="{{url_for('feeds', page=page + 1)}}">
-            <button class="btn btn-primary">Next</button>
+            <a href="{{url_for('feeds', page=page-1)}}">
+                <button class="btn btn-primary">Previous</button>
             </a>
             {% endif %}
+            <span>Page {{page}} of {{total_pages}}</span>
+
+            {% if page < total_pages %} <a href="{{url_for('feeds', page=page + 1)}}">
+                <button class="btn btn-primary">Next</button>
+                </a>
+                {% endif %}
+        {% endif %}
+
+        </section>
 
 
 

@@ -150,8 +150,11 @@
             <p> My Posts </p>
             <hr>
 
+            {% if posts == None %}
+            <h3> No Posts</h3>
+            {% else %}
             {% for post in posts %}
-            
+
             <article class="card post">
 
                 <!-- Author -->
@@ -209,7 +212,7 @@
                 <button class="btn btn-primary">Next</button>
                 </a>
                 {% endif %}
-
+                {% endif %}
         </main>
     </div>
 
