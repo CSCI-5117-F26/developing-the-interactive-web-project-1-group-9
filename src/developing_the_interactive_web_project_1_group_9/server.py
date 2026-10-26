@@ -130,8 +130,6 @@ async def user_profile(username):
     
     return render_template("profile.html", user=user, is_owner=is_owner, following=following, following_users=following_users, followers=followers, posts=posts)
 
-
-
 @app.route("/profile/edit", methods=["POST"])
 async def update_profile():
     auth0 = init_auth0()
@@ -271,3 +269,25 @@ async def unfollow(username):
         return "User not found", 404
     unfollow_user(follower_id, following_id)
     return redirect(f"/profile/{username}")
+
+@app.route("/like/<int:post_id>", methods=["POST"])
+async def like(post_id):
+    auth0 = init_auth0()
+    store_options = {"request": request}
+    user = await auth0.get_user(store_options)
+    if not user:
+        return redirect(url_for("login"))
+    userid = get_user_by_auth0(user["sub"])
+    like_post(userid, post_id)
+    return redirect(request.referrer or url_for("feeds"))
+
+@app.route("/unlike/<int:post_id>", methods=["POST"])
+async def like(post_id):
+    auth0 = init_auth0()
+    store_options = {"request": request}
+    user = await auth0.get_user(store_options)
+    if not user:
+        return redirect(url_for("login"))
+    userid = get_user_by_auth0(user["sub"])
+    unlike_post(userid, post_id)
+    return redirect(request.referrer or url_for("feeds"))
