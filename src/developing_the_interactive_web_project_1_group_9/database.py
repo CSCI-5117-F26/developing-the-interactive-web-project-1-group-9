@@ -1,7 +1,5 @@
 import psycopg
 import os
-from datetime import timedelta
-
 
 #TODO: find a better way to organize these, post edit/delete, comment edit/delete, like/double liking posts/comments,
 #      following other users, reporting posts and admin side report management, check if user owns post
@@ -10,7 +8,6 @@ from datetime import timedelta
 # create_user, update_bio, set_profile_picture, set_profile_banner, make_admin, is_admin, get_user_id
 # create_post, get_post, edit_post
 # create_comment
-
 
 #user management
 def create_user(auth_id, username, email):
@@ -168,7 +165,6 @@ def get_user_by_auth0(auth0_id):
             return result[0]
     return None
 
-
 #follower management
 
 def follow_user(follower_id, following_id):
@@ -202,131 +198,28 @@ def is_following(follower_id, following_id):
     cur.close()
     conn.close()
     if result:
-        return result
+            return result
     return None
 
-def get_username(userid):
+def get_followers(userid):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
-    cur.execute("""SELECT username FROM users WHERE id = %s;""", (userid,))
-    result = cur.fetchone()
+    cur.execute("""SELECT u.username, u.nickname FROM follows f 
+    JOIN users u ON f.follower_id = u.id WHERE f.following_id = %s ORDER BY u.username;""", (userid,))
+    following = cur.fetchall()
     cur.close()
     conn.close()
-    if result:
-        return result[0]
-    return False
+    return following
 
-def get_post(postid):
+def get_following(userid):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
-    cur.execute("""SELECT
-                     posts.id,
-                     posts.user_id,
-                     posts.content,
-                     posts.likes_count,
-                     users.username,
-                     posts.post_created,
-                     users.nickname
-                  FROM posts 
-                  JOIN users on posts.user_id = users.id
-                  WHERE posts.id = %s; """, (postid,)
-                     )
-    post = cur.fetchone()
+    cur.execute("""SELECT u.username, u.nickname FROM follows f 
+    JOIN users u ON f.following_id = u.id WHERE f.follower_id = %s ORDER BY u.username;""", (userid,))
+    following = cur.fetchall()
     cur.close()
     conn.close()
-    if not post:
-      return None
-    return {
-        "post_id": post[0],
-        "user_id": post[1],
-        "content": post[2],
-        "likes": post[3],
-        "username": post[4],
-        "time_created": (post[5] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
-        "pfp": f"/pfp/{post[1]}",
-        "nickname": post[6]
-    }
-
-def get_posts():
-    conn = psycopg.connect(os.environ["DB_URL"])
-    cur = conn.cursor()
-    cur.execute("""SELECT * FROM posts;""")
-    post = cur.fetchall()
-    conn.commit()
-    cur.close()
-    conn.close()
-    return post
-
-def get_posts_with_usernames():
-    conn = psycopg.connect(os.environ["DB_URL"])
-    cur = conn.cursor()
-    cur.execute(
-      """
-      SELECT
-        posts.id,
-        posts.content,
-        users.username,
-        posts.likes_count,
-        posts.comment_count,
-        posts.post_created,
-        posts.user_id,
-        users.nickname
-      FROM posts
-      JOIN users ON posts.user_id = users.id
-      ORDER BY post_created DESC;
-      """
-    )
-    posts = cur.fetchall()
-    if not posts:
-      return None
-    
-    return [
-        {
-          "post_id": post[0],
-          "content": post[1],
-          "username": post[2],
-          "likes": post[3],
-          "comment_count": post[4],
-          "time_created": (post[5] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
-          "pfp": f"/pfp/{post[6]}",
-          "nickname": post[7]
-      }
-      for post in posts
-    ]
-
-def get_posts_by_id(userid):
-    conn = psycopg.connect(os.environ["DB_URL"])
-    cur = conn.cursor()
-    cur.execute(
-      """
-      SELECT
-        posts.id,
-        posts.content,
-        posts.likes_count,
-        posts.comment_count,
-        posts.post_created,
-        posts.user_id
-      FROM posts
-      WHERE posts.user_id = %s
-      ORDER BY post_created DESC;""", (userid,)
-    )
-    posts = cur.fetchall()
-    if not posts:
-      return None
-    return [
-        {
-          "post_id": post[0],
-          "content": post[1],
-          "likes": post[2],
-          "comment_count": post[3],
-          "time_created": (post[4] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
-          "pfp": f"/pfp/{post[5]}"
-      }
-      for post in posts
-    ]
-
-
-
+    return following
 
 #post management
 def create_post(userid, title, content):
@@ -339,9 +232,15 @@ def create_post(userid, title, content):
     conn.close()
     return post_id
 
-
-
-
+def get_post(postid):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""SELECT * FROM posts WHERE id = %s; """, (postid,))
+    post = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return post
 
 def edit_post(postid, title, content):
     conn = psycopg.connect(os.environ["DB_URL"])
@@ -364,44 +263,6 @@ def create_comment(userid, postid, content):
     conn.close()
     return comment_id
 
-
-
-def get_comments(postid):
-    conn = psycopg.connect(os.environ["DB_URL"])
-    cur = conn.cursor()
-    cur.execute(
-      """
-      SELECT
-        comments.post_id,
-        comments.content,
-        users.username,
-        comments.likes_count,
-        comments.comment_created,
-        users.id,
-        users.nickname
-      FROM comments
-      JOIN users ON comments.user_id = users.id
-      WHERE post_id = (%s)
-      ORDER BY comment_created DESC;
-      """, (postid,)
-    )
-    comments = cur.fetchall()
-    if not comments:
-      return None
-    cur.close()
-    conn.close()
-    return [
-      {
-          "comment_id": comment[0],
-          "content": comment[1],
-          "username": comment[2],
-          "likes": comment[3],
-          "time_created": (comment[4] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
-          "pfp": f"/pfp/{comment[5]}",
-          "nickname": comment[6]
-      }
-      for comment in comments
-    ]
 # Search
 def search_database(search_term, fetch_amount):
     conn = psycopg.connect(os.environ["DB_URL"])
@@ -445,7 +306,7 @@ def search_database(search_term, fetch_amount):
         posts = cur.fetchall()
         if posts:
             posts = [
-            [row[0], row[1], row[2], row[3], row[4], row[5].strftime("%m/%d/%y %I:%M:%S %p")]
+            [row[0], row[1], row[2], row[3], row[4], row[5].strftime("%m/%d/%y")]
             for row in posts
         ]
         print("searched posts")
@@ -454,4 +315,3 @@ def search_database(search_term, fetch_amount):
         cur.close()
         conn.close()
         return posts
-

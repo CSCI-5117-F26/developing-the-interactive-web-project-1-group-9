@@ -14,6 +14,18 @@ app.secret_key = os.getenv('AUTH0_SECRET')
 load_dotenv()
 # url =  os.environ["DATABASE_URL"]
 
+# schema = """
+# CREATE TABLE IF NOT EXISTS profiles (
+#     profile_id SERIAL PRIMARY KEY,
+#     name VARCHAR(20) NOT NULL,
+#     bio  VARCHAR(100) ,
+#     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+# );
+
+# """
+# with psycopg.connect(url) as conn:
+#         with conn.cursor() as cur:
+#             cur.execute(schema)
 
 
 @app.route("/")
@@ -76,9 +88,7 @@ async def feeds():
     store_options = {"request": request}
     user = await auth0.get_user(store_options)
     # Whatever logic we use to personalize feed to user goes here
-    posts = get_posts_with_usernames()
-    return render_template("feeds.html", posts=posts)
-
+    return render_template("feeds.html")
 
 @app.route('/search', methods=["POST"])
 async def search():
@@ -104,7 +114,7 @@ async def feed():
     user_data = get_user(userid)
     return redirect(f"/profile/{user_data['username']}")
 
-# profile display route used to display own (sets is_owner tr\ue) or other's profiles
+# profile display route used to display own (sets is_owner true) or other's profiles
 @app.route("/profile/<username>")
 async def user_profile(username):
     auth0 = init_auth0()
@@ -123,8 +133,11 @@ async def user_profile(username):
             is_owner = True
         else:
             following = is_following(current_user_id, user["id"])
-    posts = get_posts_by_id(user["id"])
-    return render_template("profile.html", user=user, is_owner=is_owner, following=following, posts=posts)
+
+    following_users = get_following(user["id"])
+    followers = get_followers(user["id"])
+    
+    return render_template("profile.html", user=user, is_owner=is_owner, following=following, following_users=following_users, followers=followers)
 
 @app.route("/profile/edit", methods=["POST"])
 async def update_profile():
@@ -172,11 +185,6 @@ def banner(userid):
         return "", 404
     return Response(image[0], mimetype="image/jpeg")
 
-@app.route("/post/<int:post_id>")
-def post_page(post_id):
-    post = get_post(post_id)
-    comments = get_comments(post_id)
-    return render_template("post.html", post=post, comments=comments)
 
 @app.route("/post", methods=['POST'])
 async def submit_post():
@@ -210,37 +218,6 @@ async def submit_post():
         flash("Your post was not successful")
         
     return redirect(url_for('feeds'))
-
-@app.route("/comment", methods=['POST'])
-async def submit_comment():
-    auth0 = init_auth0()
-    store_options = {"request": request}
-    user = await auth0.get_user(store_options)
-
-    if not user:
-        return redirect(url_for('login'))
-    
-    user_id = get_user_by_auth0(user["sub"])
-    comment = request.form.get("comment")
-    postid = request.form.get("post_id")
-    if not comment:
-        flash("Comment content is required.")
-        return redirect(request.referrer)
-
-    # moderate both title and content
-    approved_comment = moderate_post(comment)
-    
-    if approved_comment is True:
-        create_comment(user_id, postid, comment)
-        flash("Comment created successfully!")
-    else:
-        flash("Your comment was not successful")
-        
-    return redirect(request.referrer)
-
-
-
-
 
 @app.route("/follow/<username>", methods=["POST"])
 async def follow(username):
