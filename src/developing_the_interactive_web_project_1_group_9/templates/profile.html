@@ -39,15 +39,16 @@
                 <dialog id="user-following" class="profile-dialog">
                     <h3>Following</h3>
                     {% if following_users %}
-                        <ul>
-                            {% for following_user in following_users %}
-                                <li>
-                                    <a href="/profile/{{ following_user[0] }}">{{ following_user[1] }} @{{ following_user[0] }}</a>
-                                </li>
-                            {% endfor %}
-                        </ul>
+                    <ul>
+                        {% for following_user in following_users %}
+                        <li>
+                            <a href="/profile/{{ following_user[0] }}">{{ following_user[1] }} @{{ following_user[0]
+                                }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
                     {% else %}
-                        <p>Not following anyone</p>
+                    <p>Not following anyone</p>
                     {% endif %}
                     <button commandfor="user-following" command="close">
                         Close
@@ -63,15 +64,15 @@
                 <dialog id="user-followers" class="profile-dialog">
                     <h3>Followers</h3>
                     {% if followers %}
-                        <ul>
-                            {% for follower in followers %}
-                                <li>
-                                    <a href="/profile/{{ follower[0] }}">{{ follower[1] }} @{{ follower[0] }}</a>
-                                </li>
-                            {% endfor %}
-                        </ul>
+                    <ul>
+                        {% for follower in followers %}
+                        <li>
+                            <a href="/profile/{{ follower[0] }}">{{ follower[1] }} @{{ follower[0] }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
                     {% else %}
-                        <p>No followers</p>
+                    <p>No followers</p>
                     {% endif %}
                     <button commandfor="user-followers" command="close">
                         Close
@@ -152,38 +153,29 @@
             {% for post in posts %}
             
             <article class="card post">
-            
+
+                <!-- Author -->
                 <div class="post-header">
+
                     <div class="post-author">
-                        <img src="{{ post.pfp }}" class="post-avatar" alt="Avatar">
-            
+                        <img src={{post.pfp}} alt="John Doe" class="post-avatar">
                         <div>
                             <strong>{{ user.nickname }}</strong>
                             <time>{{ post.time_created }}</time>
                         </div>
+
                     </div>
-            
-                    <!-- Edit dropdown -->
-                    <details class="dropdown">
-                        <summary class="btn">•••</summary>
-            
-                        <ul class="pure-menu-list">
-                            <li class="pure-menu-item">
-                                <button type="button" class="pure-menu-link" commandfor="edit-post-{{ post.post_id }}"
-                                    command="show-modal">
-                                    Edit
-                                </button>
-                            </li>
-                        </ul>
-                    </details>
+
+                    <a href="#" class="btn">Follow</a>
+
                 </div>
-            
+
                 <!-- Post content -->
                 <p class="post-body">
                     {{ post.content }}
                 </p>
-            
-            
+
+
                 <!-- Interactions -->
                 <div class="post-actions">
                     {% if post.liked %}
@@ -197,39 +189,26 @@
                     {% endif %}
 
                     <a class="post-action" href="{{ url_for('post_page', post_id=post.post_id) }}">
-                        {{ post.comment_count }} Comments
+                        {{post.comment_count}} Comments
                     </a>
+
                 </div>
-            
+
             </article>
-            
-            <!-- Edit dialog -->
-            <dialog id="edit-post-{{ post.post_id }}" class="profile-dialog">
-                <section class="card">
-                    <form class="pure-form pure-form-stacked" action="{{ url_for('update_post', post_id=post.post_id) }}"
-                        method="POST">
-            
-                        <label for="title-{{ post.post_id }}">
-                            Edit your post
-                        </label>
-                        <p></p>
-            
-                        <input type="text" id="title-{{ post.post_id }}" name="title" value="{{ post.title }}" required>
-            
-                        <textarea id="content-{{ post.post_id }}" name="post" rows="3" required>{{ post.content }}</textarea>
-            
-                        <button type="submit" class="btn btn-primary">
-                            Save Changes
-                        </button>
-            
-                        <button type="button" class="btn" commandfor="edit-post-{{ post.post_id }}" command="close">
-                            Cancel
-                        </button>
-                    </form>
-                </section>
-            </dialog>
-            
+
             {% endfor %}
+            {% if page > 1 %}
+
+            <a href="{{url_for('user_profile', username=user.username, page=page-1)}}">
+                <button class="btn btn-primary">Previous</button>
+            </a>
+            {% endif %}
+            <span>Page {{page}} of {{total_pages}}</span>
+
+            {% if page < total_pages %} <a href="{{url_for('user_profile', username=user.username, page=page + 1)}}">
+                <button class="btn btn-primary">Next</button>
+                </a>
+                {% endif %}
 
         </main>
     </div>
