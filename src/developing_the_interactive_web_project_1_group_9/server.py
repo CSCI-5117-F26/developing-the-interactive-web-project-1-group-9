@@ -123,8 +123,14 @@ async def user_profile(username):
             is_owner = True
         else:
             following = is_following(current_user_id, user["id"])
+
     posts = get_posts_by_id(user["id"])
-    return render_template("profile.html", user=user, is_owner=is_owner, following=following, posts=posts)
+    following_users = get_following(user["id"])
+    followers = get_followers(user["id"])
+    
+    return render_template("profile.html", user=user, is_owner=is_owner, following=following, following_users=following_users, followers=followers, posts=posts)
+
+
 
 @app.route("/profile/edit", methods=["POST"])
 async def update_profile():
@@ -237,10 +243,6 @@ async def submit_comment():
         flash("Your comment was not successful")
         
     return redirect(request.referrer)
-
-
-
-
 
 @app.route("/follow/<username>", methods=["POST"])
 async def follow(username):

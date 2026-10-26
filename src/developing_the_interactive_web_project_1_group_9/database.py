@@ -205,6 +205,26 @@ def is_following(follower_id, following_id):
         return result
     return None
 
+def get_followers(userid):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""SELECT u.username, u.nickname FROM follows f 
+    JOIN users u ON f.follower_id = u.id WHERE f.following_id = %s ORDER BY u.username;""", (userid,))
+    following = cur.fetchall()
+    cur.close()
+    conn.close()
+    return following
+
+def get_following(userid):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""SELECT u.username, u.nickname FROM follows f 
+    JOIN users u ON f.following_id = u.id WHERE f.follower_id = %s ORDER BY u.username;""", (userid,))
+    following = cur.fetchall()
+    cur.close()
+    conn.close()
+    return following
+
 def get_username(userid):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
@@ -454,4 +474,3 @@ def search_database(search_term, fetch_amount):
         cur.close()
         conn.close()
         return posts
-
