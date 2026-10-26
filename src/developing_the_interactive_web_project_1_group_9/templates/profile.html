@@ -6,14 +6,7 @@
 
 <div class="page profile" data-view="owner">
 
-    <header class="topbar">
-        <a href="/feeds" class="btn btn-primary">Main feed</a>
-        
-        <form class="pure-form" role="search" action={{url_for('search')}} method="POST">
-            <input class="search" type="search" name="search" placeholder="Search people and posts">
-            <button type="submit" style="display: none;"></button>
-        </form>
-    </header>
+    
 
     <div class="pure-g">
 
@@ -131,21 +124,18 @@
             <p> My Posts </p>
             <hr>
 
+            {% for post in posts %}
             <article class="card post">
             
                 <!-- Author -->
                 <div class="post-header">
             
                     <div class="post-author">
-            
-                        <a href="/profile">
-                            <img src="https://s3.amazonaws.com/comicgeeks/characters/avatars/22065.jpg?t=1756153029"
-                                alt="John Doe" class="post-avatar">
-                        </a>
-            
+                          <img src={{post.pfp}} alt="John Doe"
+                              class="post-avatar">
                         <div>
-                            <strong>Barry Allen</strong>
-                            <time datetime="2026-10-17">Oct 17, 2026</time>
+                            <strong>@{{ user.username }}</strong>
+                            <time datetime="2026-10-17">{{post.time_created}}</time>
                         </div>
             
                     </div>
@@ -156,7 +146,7 @@
             
                 <!-- Post content -->
                 <p class="post-body">
-                    Feels like a good day for something?
+                    {{ post.content }}
                 </p>
             
                 <span class="happiness">🌦️ Great</span>
@@ -164,17 +154,19 @@
                 <!-- Interactions -->
                 <div class="post-actions">
             
-                    <button type="button" class="post-action">
-                        ♡ 24 Happiness
+                    <button type="button" class="post-action" >
+                        {{post.likes}} Happiness
                     </button>
             
-                    <button type="button" class="post-action">
-                        ◯ 12 Comments
-                    </button>
+                    <a class="post-action" href="{{ url_for('post_page', post_id=post.post_id) }}">
+                      {{post.comment_count}} Comments
+                    </a>
             
                 </div>
             
             </article>
+
+          {% endfor %}
 
         </main>
     </div>
