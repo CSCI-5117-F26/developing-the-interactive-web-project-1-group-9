@@ -323,7 +323,6 @@ def get_posts_by_id(userid):
       """
       SELECT
         posts.id,
-        posts.title,
         posts.content,
         posts.likes_count,
         posts.comment_count,
@@ -339,12 +338,11 @@ def get_posts_by_id(userid):
     return [
         {
           "post_id": post[0],
-          "title": post[1],
-          "content": post[2],
-          "likes": post[3],
-          "comment_count": post[4],
-          "time_created": (post[5] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
-          "pfp": f"/pfp/{post[6]}"
+          "content": post[1],
+          "likes": post[2],
+          "comment_count": post[3],
+          "time_created": (post[4] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
+          "pfp": f"/pfp/{post[5]}"
       }
       for post in posts
     ]
@@ -353,10 +351,10 @@ def get_posts_by_id(userid):
 
 
 #post management
-def create_post(userid, title, content):
+def create_post(userid, content):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
-    cur.execute("""INSERT INTO posts (user_id, title, content) VALUES (%s, %s, %s) RETURNING id;""", (userid, title, content))
+    cur.execute("""INSERT INTO posts (user_id, content) VALUES (%s, %s, %s) RETURNING id;""", (userid, content))
     post_id = cur.fetchone()[0]
     conn.commit()
     cur.close()
@@ -367,10 +365,10 @@ def create_post(userid, title, content):
 
 
 
-def edit_post(postid, title, content):
+def edit_post(postid, content):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
-    cur.execute("""UPDATE posts SET title = %s, content = %s, last_updated = CURRENT_TIMESTAMP WHERE id = %s;""", (title, content, postid))
+    cur.execute("""UPDATE posts SET content = %s, last_updated = CURRENT_TIMESTAMP WHERE id = %s;""", (content, postid))
     conn.commit()
     cur.close()
     conn.close()
@@ -512,3 +510,11 @@ def has_liked(userid, postid):
     if result:
         return True
     return False
+
+def delete_post_db(userid, postid):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""DELETE FROM posts WHERE id = %s AND user_id = %s;""", (postid, userid))
+    conn.commit()
+    cur.close()
+    conn.close()
