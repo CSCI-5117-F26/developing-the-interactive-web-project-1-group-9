@@ -78,11 +78,11 @@
               
                     {% if post.liked %}
                     <form action="/unlike/{{ post.post_id }}" method="POST">
-                        <button type="submit">👍 {{ post.likes }} Happiness</button>
+                        <button type="submit" class="post-action">🚫👍 {{ post.likes }} Happiness</button>
                     </form>
                     {% else %}
                     <form action="/like/{{ post.post_id }}" method="POST">
-                        <button type="submit">👍 {{ post.likes }} Happiness</button>
+                        <button type="submit" class="post-action">👍 {{ post.likes }} Happiness</button>
                     </form>
                     {% endif %}
             
