@@ -13,13 +13,13 @@
 
         <!-- show message posting feedback -->
         {% for message in get_flashed_messages() %}
-            <div class="flash-alert" role="alert">
-                {{ message }}
-            
-                <button type="button" class="flash-alert-close" onclick="this.parentElement.remove()" aria-label="Close">
-                    &times;
-                </button>
-            </div>
+        <div class="flash-alert" role="alert">
+            {{ message }}
+
+            <button type="button" class="flash-alert-close" onclick="this.parentElement.remove()" aria-label="Close">
+                &times;
+            </button>
+        </div>
         {% endfor %}
 
         <!-- Create Post -->
@@ -41,41 +41,40 @@
         </section>
         <!-- Recent Posts -->
         <section>
-          
+
             <h3>Recent Posts</h3>
             {% for post in posts %}
             <article class="card post">
-            
+
                 <!-- Author -->
-                  <div class="post-header">
-              
-                      <div class="post-author">
-              
-                          <a href="{{ url_for('user_profile', username=post.username) }}">
-                              <img src={{post.pfp}} alt="John Doe"
-                                  class="post-avatar">
-                          </a>
-              
-                          <div>
-                              <strong>{{ post.nickname }}</strong>
-                              <time datetime="2026-10-17">{{post.time_created}}</time>
-                          </div>
-              
-                      </div>
-              
-                      <a href="#" class="btn">Follow</a>
-              
-                  </div>
-              
-                  <!-- Post content -->
-                  <p class="post-body">
-                      {{ post.content }}
-                  </p>
-              
-              
-                  <!-- Interactions -->
-                  <div class="post-actions">
-              
+                <div class="post-header">
+
+                    <div class="post-author">
+
+                        <a href="{{ url_for('user_profile', username=post.username) }}">
+                            <img src={{post.pfp}} alt="John Doe" class="post-avatar">
+                        </a>
+
+                        <div>
+                            <strong>{{ post.nickname }}</strong>
+                            <time datetime="2026-10-17">{{post.time_created}}</time>
+                        </div>
+
+                    </div>
+
+                    <a href="#" class="btn">Follow</a>
+
+                </div>
+
+                <!-- Post content -->
+                <p class="post-body">
+                    {{ post.content }}
+                </p>
+
+
+                <!-- Interactions -->
+                <div class="post-actions">
+
                     {% if post.liked %}
                     <form action="/unlike/{{ post.post_id }}" method="POST">
                         <button type="submit" class="post-action">🚫👍 {{ post.likes }} Happiness</button>
@@ -85,17 +84,31 @@
                         <button type="submit" class="post-action">👍 {{ post.likes }} Happiness</button>
                     </form>
                     {% endif %}
-            
+
                     <a class="post-action" href="{{ url_for('post_page', post_id=post.post_id) }}">
-                    {{post.comment_count}} Comments
+                        {{post.comment_count}} Comments
                     </a>
-              
-                  </div>
-            
+
+                </div>
+
             </article>
 
-          {% endfor %}
+            {% endfor %}
         </section>
+
+        {% if page > 1 %}
+
+        <a href="{{url_for('feeds', page=page-1)}}">
+            <button class="btn btn-primary">Previous</button>
+        </a>
+        {% endif %}
+        <span>Page {{page}} of {{total_pages}}</span>
+
+        {% if page < total_pages %} <a href="{{url_for('feeds', page=page + 1)}}">
+            <button class="btn btn-primary">Next</button>
+            </a>
+            {% endif %}
+
 
 
     </main>

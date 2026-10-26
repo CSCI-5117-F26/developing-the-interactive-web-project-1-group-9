@@ -6,7 +6,7 @@
 
 <div class="page profile" data-view="owner">
 
-    
+
 
     <div class="pure-g">
 
@@ -35,49 +35,50 @@
                     <span>Following</span>
                     <strong> {{ user.following_count }}</strong>
                 </button>
-            
+
                 <dialog id="user-following" class="profile-dialog">
                     <h3>Following</h3>
                     {% if following_users %}
-                        <ul>
-                            {% for following_user in following_users %}
-                                <li>
-                                    <a href="/profile/{{ following_user[0] }}">{{ following_user[1] }} @{{ following_user[0] }}</a>
-                                </li>
-                            {% endfor %}
-                        </ul>
+                    <ul>
+                        {% for following_user in following_users %}
+                        <li>
+                            <a href="/profile/{{ following_user[0] }}">{{ following_user[1] }} @{{ following_user[0]
+                                }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
                     {% else %}
-                        <p>Not following anyone</p>
+                    <p>Not following anyone</p>
                     {% endif %}
                     <button commandfor="user-following" command="close">
                         Close
                     </button>
                 </dialog>
-            
+
                 <!-- Button and Dialog to show followers -->
                 <button command="show-modal" commandfor="user-followers" class="btn btn-block stat">
                     <span>Followers</span>
                     <strong> {{ user.follower_count }}</strong>
                 </button>
-            
+
                 <dialog id="user-followers" class="profile-dialog">
                     <h3>Followers</h3>
                     {% if followers %}
-                        <ul>
-                            {% for follower in followers %}
-                                <li>
-                                    <a href="/profile/{{ follower[0] }}">{{ follower[1] }} @{{ follower[0] }}</a>
-                                </li>
-                            {% endfor %}
-                        </ul>
+                    <ul>
+                        {% for follower in followers %}
+                        <li>
+                            <a href="/profile/{{ follower[0] }}">{{ follower[1] }} @{{ follower[0] }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
                     {% else %}
-                        <p>No followers</p>
+                    <p>No followers</p>
                     {% endif %}
                     <button commandfor="user-followers" command="close">
                         Close
                     </button>
                 </dialog>
-            
+
             </div>
             <p></p>
 
@@ -90,7 +91,7 @@
                 <!-- Dialog to show edit profile -->
                 <dialog id="edit-profile" class="profile-dialog">
                     <form action="/profile/edit" method="POST" enctype="multipart/form-data">
-                       <input type="text" name="nickname" maxlength="50">
+                        <input type="text" name="nickname" maxlength="50">
                         <br>
                         <label>Bio</label>
                         <textarea name="bio"></textarea>
@@ -107,19 +108,19 @@
                 {% endif %}
 
                 {% if not is_owner %}
-                    {% if following %}
-                        <form action="/unfollow/{{ user.username }}" method="POST">
-                            <button type="submit" class="btn btn-block">
-                                Unfollow
-                            </button>
-                        </form>
-                        {% else %}
-                        <form action="/follow/{{ user.username }}" method="POST">
-                            <button type="submit" class="btn btn-primary btn-block">
-                                Follow
-                            </button>
-                        </form>
-                    {% endif %}
+                {% if following %}
+                <form action="/unfollow/{{ user.username }}" method="POST">
+                    <button type="submit" class="btn btn-block">
+                        Unfollow
+                    </button>
+                </form>
+                {% else %}
+                <form action="/follow/{{ user.username }}" method="POST">
+                    <button type="submit" class="btn btn-primary btn-block">
+                        Follow
+                    </button>
+                </form>
+                {% endif %}
                 {% endif %}
 
                 <a href="/signin" class="btn btn-block" data-show="guest">
@@ -135,15 +136,14 @@
                 {% endif %}
             </div>
 
-           
+
 
         </aside>
 
         <!-- RIGHT -->
         <main class="pure-u-1 pure-u-md-3-4">
             <div class="banner">
-                <img src="{{user.banner}}" alt="John Doe"
-                    >
+                <img src="{{user.banner}}" alt="John Doe">
             </div>
 
             <hr>
@@ -152,30 +152,29 @@
 
             {% for post in posts %}
             <article class="card post">
-            
+
                 <!-- Author -->
                 <div class="post-header">
-            
+
                     <div class="post-author">
-                          <img src={{post.pfp}} alt="John Doe"
-                              class="post-avatar">
+                        <img src={{post.pfp}} alt="John Doe" class="post-avatar">
                         <div>
                             <strong>{{ user.nickname }}</strong>
                             <time datetime="2026-10-17">{{post.time_created}}</time>
                         </div>
-            
+
                     </div>
-            
+
                     <a href="#" class="btn">Follow</a>
-            
+
                 </div>
-            
+
                 <!-- Post content -->
                 <p class="post-body">
                     {{ post.content }}
                 </p>
-            
-            
+
+
                 <!-- Interactions -->
                 <div class="post-actions">
                     {% if post.liked %}
@@ -189,14 +188,26 @@
                     {% endif %}
 
                     <a class="post-action" href="{{ url_for('post_page', post_id=post.post_id) }}">
-                      {{post.comment_count}} Comments
+                        {{post.comment_count}} Comments
                     </a>
-            
+
                 </div>
-            
+
             </article>
 
-          {% endfor %}
+            {% endfor %}
+            {% if page > 1 %}
+
+            <a href="{{url_for('user_profile', username=user.username, page=page-1)}}">
+                <button class="btn btn-primary">Previous</button>
+            </a>
+            {% endif %}
+            <span>Page {{page}} of {{total_pages}}</span>
+
+            {% if page < total_pages %} <a href="{{url_for('user_profile', username=user.username, page=page + 1)}}">
+                <button class="btn btn-primary">Next</button>
+                </a>
+                {% endif %}
 
         </main>
     </div>
