@@ -77,6 +77,13 @@ async def feeds():
     user = await auth0.get_user(store_options)
     # Whatever logic we use to personalize feed to user goes here
     posts = get_posts_with_usernames()
+    if user:
+        userid = get_user_by_auth0(user["sub"])
+        for post in posts:
+            post["liked"] = has_liked(userid, post["post_id"])
+    else:
+        for post in posts:
+            post["liked"] = False
     return render_template("feeds.html", posts=posts)
 
 
@@ -125,6 +132,13 @@ async def user_profile(username):
             following = is_following(current_user_id, user["id"])
 
     posts = get_posts_by_id(user["id"])
+    if user:
+        userid = get_user_by_auth0(user["sub"])
+        for post in posts:
+            post["liked"] = has_liked(userid, post["post_id"])
+    else:
+        for post in posts:
+            post["liked"] = False
     following_users = get_following(user["id"])
     followers = get_followers(user["id"])
     
@@ -178,16 +192,9 @@ def banner(userid):
 
 @app.route("/post/<int:post_id>")
 async def post_page(post_id):
-    auth0 = init_auth0()
-    store_options = {"request": request}
-    auth_user = await auth0.get_user(store_options)
     post = get_post(post_id)
     comments = get_comments(post_id)
-    liked = False
-    if auth_user:
-        userid = get_user_by_auth0(auth_user["sub"])
-        liked = has_liked(userid, post_id)
-    return render_template("post.html", post=post, comments=comments, liked=liked)
+    return render_template("post.html", post=post, comments=comments)
 
 @app.route("/post", methods=['POST'])
 async def submit_post():
