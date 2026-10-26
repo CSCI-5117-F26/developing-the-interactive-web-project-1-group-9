@@ -12,7 +12,7 @@
               </a>
               <div>
                   <!-- Uses 'post' matching the key from render_template -->
-                  <strong>@{{ post.username }}</strong>
+                  <strong>{{ post.nickname }}</strong>
                   <time datetime="2026-10-17">{{ post.time_created}}</time>
               </div>
           </div>
@@ -24,7 +24,6 @@
           {{ post.content }}
       </p>
 
-      <span class="happiness">🌦️ Great</span>
 
       <!-- Interactions -->
       <div class="post-actions">
@@ -34,21 +33,34 @@
       </div>
     </article>
 
+    {% for message in get_flashed_messages() %}
+            <div class="flash-alert" role="alert">
+                {{ message }}
+            
+                <button type="button" class="flash-alert-close" onclick="this.parentElement.remove()" aria-label="Close">
+                    &times;
+                </button>
+            </div>
+    {% endfor %}
+
     <section>
 
       <section class="card">
-        <form class="pure-form pure-form-stacked">
+        <form class="pure-form pure-form-stacked" action="/comment" method="POST">
+            <input type="hidden" name="post_id" value="{{post.post_id}}">
+            <label for="comment">Leave a comment!</label>
 
-            <label for="post">Leave a comment!</label>
-
-            <textarea id="post" name="post" rows="3" placeholder="What a beautiful day for commenting!"></textarea>
+            <textarea id="comment" name="comment" rows="3" placeholder="What a beautiful day for commenting!"></textarea>
 
             <button type="submit" class="btn btn-primary">
                 Post
             </button>
 
+
         </form>
     </section>
+
+    
             
       <h3>Comments</h3>
       {% if comments == None %}
@@ -69,7 +81,7 @@
                   </a>
       
                   <div>
-                      <strong>@{{ comment.username }}</strong>
+                      <strong>{{ comment.nickname }}</strong>
                       <time datetime="2026-10-17">{{comment.time_created}}</time>
                   </div>
       
@@ -84,7 +96,6 @@
               {{ comment.content }}
           </p>
       
-          <span class="happiness">🌦️ Great</span>
       
           <!-- Interactions -->
           <div class="post-actions">
