@@ -1,4 +1,4 @@
-from flask import Flask, flash, render_template, request, g, Response, make_response, redirect, url_for
+from flask import Flask, abort, flash, render_template, request, g, Response, make_response, redirect, url_for
 from auth0_server_python.auth_types import LogoutOptions
 from developing_the_interactive_web_project_1_group_9.auth import init_auth0
 from dotenv import load_dotenv
@@ -18,7 +18,7 @@ load_dotenv()
 
 @app.route("/")
 async def index():
-    return redirect(url_for('feeds'))
+    return render_template("login.html")
 
 @app.route("/signin")
 async def login():
@@ -66,9 +66,9 @@ async def logout():
     response.headers["Location"] = logout_url
     return response
 
-@app.route("/signup")
+@app.route("/onboard")
 def signup():
-    return render_template("signup.html")
+    return render_template("login.html")
 
 @app.route("/feeds")
 async def feeds():
@@ -177,6 +177,48 @@ def post_page(post_id):
     post = get_post(post_id)
     comments = get_comments(post_id)
     return render_template("post.html", post=post, comments=comments)
+
+@app.route("/post/<int:post_id>/edit", methods=["POST"])
+async def edit_post(post_id):
+    auth0 = init_auth0()
+    store_options = {"request": request}
+    user = await auth0.get_user(store_options)
+
+    if not user:
+        return redirect(url_for('login'))
+    
+    user_id = get_user_by_auth0(user["sub"])
+    existing_post = get_posts_by_id(post_id)
+
+    if not existing_post:
+        abort(404)
+
+    # Verify post ownership
+    if existing_post["user_id"] != user_id:
+        abort(403)
+
+    # get form data
+    title = request.form.get("title")
+    post = request.form.get("post")
+    if not title or not post:
+        flash("Title and post content are required.")
+        return redirect(url_for("feeds"))
+
+    # Moderate updated content
+    approved_title = moderate_post(title)
+    approved_post = moderate_post(post)
+
+    if approved_title is True and approved_post is True:
+        edit_post(post_id, title, post)
+        flash("Post updated successfully!")
+    else:
+        flash("Your changes could not be approved.")
+
+    return redirect(url_for("feeds"))
+
+@app.route("/post/<int:post_id>/delete")
+def delete_post(post_id):
+    return True
 
 @app.route("/post", methods=['POST'])
 async def submit_post():

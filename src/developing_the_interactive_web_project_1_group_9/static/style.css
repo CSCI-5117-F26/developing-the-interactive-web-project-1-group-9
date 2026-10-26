@@ -105,6 +105,32 @@ a {
     width: 100%;
 }
 
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown summary {
+    list-style: none;
+}
+
+.dropdown summary::-webkit-details-marker {
+    display: none;
+}
+
+.dropdown .pure-menu-list {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 5px);
+    min-width: 140px;
+    padding: 6px;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    z-index: 10;
+}
+
 .flash-alert {
     display: flex;
     align-items: center;
@@ -154,7 +180,8 @@ a {
 
 .auth-header {
     text-align: center;
-    margin-bottom: 32px;
+    font-size: xx-large;
+    margin-bottom: 12px;
 }
 
 .auth-container input:not([type="checkbox"]) {
