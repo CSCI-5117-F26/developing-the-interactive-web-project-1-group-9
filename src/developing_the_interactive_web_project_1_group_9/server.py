@@ -85,7 +85,7 @@ async def feeds():
         for post in posts:
             post["liked"] = False
     page = request.args.get('page', 1, type=int)
-    per_page = 3
+    per_page = 5
     start = (page - 1) * per_page
     end = start + per_page
     total_pages = (len(posts) + per_page - 1) // per_page
@@ -108,7 +108,7 @@ async def search():
     print (search_results)
     search_type = search_term.startswith('@')
     page = request.args.get('page', 1, type=int)
-    per_page = 3
+    per_page = 5
     start = (page - 1) * per_page
     end = start + per_page
     total_pages = (len(search_results) + per_page - 1) // per_page
@@ -161,7 +161,7 @@ async def user_profile(username):
     followers = get_followers(user["id"])
 
     page = request.args.get('page', 1, type=int)
-    per_page = 3
+    per_page = 5
     start = (page - 1) * per_page
     end = start + per_page
     total_pages = (len(posts) + per_page - 1) // per_page
@@ -226,7 +226,13 @@ async def post_page(post_id):
     if auth_user:
         userid = get_user_by_auth0(auth_user["sub"])
         liked = has_liked(userid, post_id)
-    return render_template("post.html", post=post, comments=comments, liked=liked)
+    page = request.args.get('page', 1, type=int)
+    per_page = 5
+    start = (page - 1) * per_page
+    end = start + per_page
+    total_pages = (len(comments) + per_page - 1) // per_page
+    comments_on_page = comments[start:end]
+    return render_template("post.html", post=post, comments=comments_on_page, liked=liked, total_pages = total_pages, page=page, post_id=post_id)
 
 @app.route("/post", methods=['POST'])
 async def submit_post():
