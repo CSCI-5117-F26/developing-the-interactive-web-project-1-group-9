@@ -6,16 +6,30 @@
 
 <div class="page feed">
 
-    
+    <!-- Header -->
 
     <!-- Feed -->
     <main>
 
+        <!-- show message posting feedback -->
+        {% for message in get_flashed_messages() %}
+            <div class="flash-alert" role="alert">
+                {{ message }}
+            
+                <button type="button" class="flash-alert-close" onclick="this.parentElement.remove()" aria-label="Close">
+                    &times;
+                </button>
+            </div>
+        {% endfor %}
+
         <!-- Create Post -->
         <section class="card">
-            <form class="pure-form pure-form-stacked">
+            <form class="pure-form pure-form-stacked" action="/post" method="POST">
 
-                <label for="post">Let's add some sunshine ☀️</label>
+                <label for="post">Share some positivity ☀️</label>
+                <p></p>
+
+                <input type="text" id="title" name="title" placeholder="Title">
 
                 <textarea id="post" name="post" rows="3" placeholder="What's making you happy today?"></textarea>
 

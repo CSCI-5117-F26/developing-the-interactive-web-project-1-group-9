@@ -6,6 +6,7 @@
 
 <div class="page profile" data-view="owner">
 
+    
 
     <div class="pure-g">
 
@@ -14,7 +15,7 @@
 
             <div class="profile-info">
                 <div class="avatar">
-                    <img src="{{user.pfp}}" alt="Profile Picture">
+                    <img src="{{user.pfp}}" alt="John Doe">
                 </div>
 
                 <div class="profile-details">
@@ -59,6 +60,7 @@
                 <button command="show-modal" commandfor="edit-profile" class="btn btn-block" data-show="owner">
                     Edit Profile
                 </button>
+
                 <!-- Dialog to show edit profile -->
                 <dialog id="edit-profile" class="profile-dialog">
                     <form action="/profile/edit" method="POST" enctype="multipart/form-data">
@@ -78,10 +80,20 @@
                 </dialog>
                 {% endif %}
 
-                {% if is_owner == False %} <!-- user can't follow themself -->
-                <button class="btn btn-primary btn-block">
-                    Follow
-                </button>
+                {% if not is_owner %}
+                    {% if following %}
+                        <form action="/unfollow/{{ user.username }}" method="POST">
+                            <button type="submit" class="btn btn-block">
+                                Unfollow
+                            </button>
+                        </form>
+                        {% else %}
+                        <form action="/follow/{{ user.username }}" method="POST">
+                            <button type="submit" class="btn btn-primary btn-block">
+                                Follow
+                            </button>
+                        </form>
+                    {% endif %}
                 {% endif %}
 
                 <a href="/signin" class="btn btn-block" data-show="guest">
@@ -104,7 +116,8 @@
         <!-- RIGHT -->
         <main class="pure-u-1 pure-u-md-3-4">
             <div class="banner">
-                <img src="{{user.banner}}" alt="Banner">
+                <img src="{{user.banner}}" alt="John Doe"
+                    >
             </div>
 
             <hr>

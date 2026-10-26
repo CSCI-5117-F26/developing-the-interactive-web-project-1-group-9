@@ -1,16 +1,18 @@
-from flask import Flask, render_template, request, jsonify, g, Response, make_response, redirect, url_for
+from flask import Flask, flash, render_template, request, g, Response, make_response, redirect, url_for
 from auth0_server_python.auth_types import LogoutOptions
 from developing_the_interactive_web_project_1_group_9.auth import init_auth0
 from dotenv import load_dotenv
-from database import *
-import psycopg
+from developing_the_interactive_web_project_1_group_9.database import *
+from developing_the_interactive_web_project_1_group_9.llm import *
+
+# import psycopg
 import os
 
 app = Flask(__name__)
 app.secret_key = os.getenv('AUTH0_SECRET')
 
-
-url =  os.environ["DB_URL"]
+load_dotenv()
+# url =  os.environ["DATABASE_URL"]
 
 
 
@@ -47,7 +49,7 @@ async def callback():
         if userid is None:
             create_user(auth0_id, username, email)
         response.status_code = 302
-        response.headers["Location"] = url_for('profile')
+        response.headers["Location"] = url_for('feed')
         return response
     except Exception as e:
         return f"Authentication error: {str(e)}", 400
@@ -78,28 +80,26 @@ async def feeds():
     return render_template("feeds.html", posts=posts)
 
 
-# @app.route("/profile")
-# async def feed():
-#     auth0 = init_auth0()
-#     store_options = {"request": request}
-#     user = await auth0.get_user(store_options)
-#     if not user:
-#         return redirect(url_for('login'))
-#     # fetch profile info from db using auth0 id
-#     userid = get_user_by_auth0(user["sub"])
-#     user_data = get_user(userid)
-#     user_data["pfp"] = f"/pfp/{userid}" # append pfp and banner photos to user data object for simplicity
-#     user_data["banner"] = f"/banner/{userid}"
-#     return render_template("profile.html", user=user_data)
+@app.route('/search', methods=["POST"])
+async def search():
+    search_term = request.form.get("search")
+    print("search term")
+    print (search_term)
+    search_results = search_database(search_term, 20)
+    print("search results")
+    print (search_results)
+    search_type = search_term.startswith('@')
+    return render_template("search.html", search_results=search_results, profile=search_type, search_term=search_term)
 
-# default route /profile path, redirects to /profile/<username> passing current auth0 user's db username
+# default profile call routes to current auth0 users profile
 @app.route("/profile")
-async def profile():
+async def feed():
     auth0 = init_auth0()
     store_options = {"request": request}
     user = await auth0.get_user(store_options)
     if not user:
-        return redirect(url_for("login"))
+        return redirect(url_for('login'))
+    # fetch profile info from db using auth0 id
     userid = get_user_by_auth0(user["sub"])
     user_data = get_user(userid)
     return redirect(f"/profile/{user_data['username']}")
@@ -116,12 +116,15 @@ async def user_profile(username):
     user["pfp"] = f"/pfp/{user['id']}"
     user["banner"] = f"/banner/{user['id']}"
     is_owner = False
+    following = False
     if current_user:
         current_user_id = get_user_by_auth0(current_user["sub"])
         if current_user_id == user["id"]:
             is_owner = True
+        else:
+            following = is_following(current_user_id, user["id"])
     posts = get_posts_by_id(user["id"])
-    return render_template("profile.html", user=user, is_owner=is_owner, posts=posts)
+    return render_template("profile.html", user=user, is_owner=is_owner, following=following, posts=posts)
 
 @app.route("/profile/edit", methods=["POST"])
 async def update_profile():
@@ -174,3 +177,64 @@ def post_page(post_id):
     post = get_post(post_id)
     comments = get_comments(post_id)
     return render_template("post.html", post=post, comments=comments)
+
+@app.route("/post", methods=['POST'])
+async def submit_post():
+    auth0 = init_auth0()
+    store_options = {"request": request}
+    user = await auth0.get_user(store_options)
+
+    if not user:
+        return redirect(url_for('login'))
+    
+    user_id = get_user_by_auth0(user["sub"])
+
+    # get form data
+    title = request.form.get("title")
+    post = request.form.get("post")
+
+    if not title or not post:
+        flash("Title and post content are required.")
+        return redirect(url_for("feeds"))
+
+    # moderate both title and content
+    approved_title = moderate_post(title)
+    approved_post = moderate_post(post)
+    
+    if approved_title is True and approved_post is True:
+        create_post(user_id, title, post)
+        flash("Post created successfully!")
+    elif approved_title is False and approved_post is False:
+        flash("Your post was rejected!")
+    else:
+        flash("Your post was not successful")
+        
+    return redirect(url_for('feeds'))
+
+@app.route("/follow/<username>", methods=["POST"])
+async def follow(username):
+    auth0 = init_auth0()
+    store_options = {"request": request}
+    auth_user = await auth0.get_user(store_options)
+    if not auth_user:
+        return redirect(url_for("login"))
+    follower_id = get_user_by_auth0(auth_user["sub"])
+    following_id = get_user_id(username)
+    if not following_id:
+        return "User not found", 404
+    follow_user(follower_id, following_id)
+    return redirect(f"/profile/{username}")
+
+@app.route("/unfollow/<username>", methods=["POST"])
+async def unfollow(username):
+    auth0 = init_auth0()
+    store_options = {"request": request}
+    auth_user = await auth0.get_user(store_options)
+    if not auth_user:
+        return redirect(url_for("login"))
+    follower_id = get_user_by_auth0(auth_user["sub"])
+    following_id = get_user_id(username)
+    if not following_id:
+        return "User not found", 404
+    unfollow_user(follower_id, following_id)
+    return redirect(f"/profile/{username}")

@@ -167,6 +167,42 @@ def get_user_by_auth0(auth0_id):
     return None
 
 
+#follower management
+
+def follow_user(follower_id, following_id):
+    if follower_id == following_id: # user cant follow self
+        return False
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""INSERT INTO follows (follower_id, following_id) VALUES (%s, %s) ON CONFLICT DO NOTHING;""", (follower_id, following_id))
+    cur.execute("""UPDATE users SET following_count = following_count + 1 WHERE id = %s;""", (follower_id,))
+    cur.execute("""UPDATE users SET follower_count = follower_count + 1 WHERE id = %s;""", (following_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return True
+
+def unfollow_user(follower_id, following_id):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""DELETE FROM follows WHERE follower_id = %s AND following_id = %s;""", (follower_id, following_id))
+    cur.execute("""UPDATE users SET following_count = GREATEST(following_count - 1, 0) WHERE id = %s;""", (follower_id,)) # dont let count go negative
+    cur.execute("""UPDATE users SET follower_count = GREATEST(follower_count - 1, 0) WHERE id = %s;""", (following_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def is_following(follower_id, following_id):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""SELECT 1 FROM follows WHERE follower_id = %s AND following_id = %s;""", (follower_id, following_id))
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    if result:
+        return result
+    return None
+
 def get_username(userid):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
@@ -283,6 +319,7 @@ def get_posts_by_id(userid):
 
 
 
+
 #post management
 def create_post(userid, title, content):
     conn = psycopg.connect(os.environ["DB_URL"])
@@ -320,6 +357,7 @@ def create_comment(userid, postid, content):
     return comment_id
 
 
+
 def get_comments(postid):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
@@ -353,3 +391,56 @@ def get_comments(postid):
       }
       for comment in comments
     ]
+# Search
+def search_database(search_term, fetch_amount):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    # Have to do some shenanigans because %%s% would not pass the string argument in
+    if search_term.startswith('@'):
+        command = """
+            SELECT id, username, bio
+            FROM users 
+            WHERE username ILIKE '%%' || %s || '%%'
+                OR bio ILIKE '%%' || %s || '%%'
+            LIMIT %s;
+        """
+        cur.execute(command, (search_term[1:], search_term[1:], fetch_amount))
+        profiles = cur.fetchall()
+        print("searched profiles:")
+        print(profiles)
+        conn.commit()
+        cur.close()
+        conn.close()
+        return profiles
+    else:
+        # Yoink Ali's code again
+        cur.execute (
+            """
+            WITH simlar_posts AS (
+                SELECT * FROM posts WHERE title ILIKE '%%' || %s || '%%' OR content ILIKE '%%' || %s || '%%' LIMIT %s
+            )
+            SELECT
+                simlar_posts.id,
+                simlar_posts.content,
+                users.username,
+                simlar_posts.likes_count,
+                simlar_posts.comment_count,
+                simlar_posts.post_created
+            FROM simlar_posts
+            JOIN users ON simlar_posts.user_id = users.id;
+            """
+            , (search_term, search_term, fetch_amount)
+        )
+        posts = cur.fetchall()
+        if posts:
+            posts = [
+            [row[0], row[1], row[2], row[3], row[4], row[5].strftime("%m/%d/%y")]
+            for row in posts
+        ]
+        print("searched posts")
+        print(posts)
+        conn.commit()
+        cur.close()
+        conn.close()
+        return posts
+

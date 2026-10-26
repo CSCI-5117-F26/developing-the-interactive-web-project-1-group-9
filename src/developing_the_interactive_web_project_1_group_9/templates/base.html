@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.1.0/build/pure-min.css"
         integrity="sha384-kj0X2NG2KHBie8Tq8fH1kxnyWM9XsXQpq7XdwbKmFKjwwaXGKBlB2Klu3VOltSFx" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.1.0/build/grids-responsive-min.css" />
-    <link rel="stylesheet" href="{{url_for('static', filename='/style.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
 
 </head>
 
@@ -20,14 +20,19 @@
     <header class="topbar">
       <a href="/profile" class="btn btn-primary">My Profile</a>
       <a href="/feeds" class="btn btn-primary">Main feed</a>
+      
 
-      <form class="pure-form" role="search">
-          <input class="search" type="search" placeholder="Search people and posts">
+      <form class="pure-form" role="search" action={{url_for('search')}} method="POST">
+        <input class="search" type="search" name="search" placeholder="Search people and posts">
+        <button type="submit" style="display: none;"></button>
       </form>
     </header>
   </div>
+
     {% block content %}
     {% endblock %}
 </body>
 
 </html>
+
+
