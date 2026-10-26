@@ -282,7 +282,7 @@ async def like(post_id):
     return redirect(request.referrer or url_for("feeds"))
 
 @app.route("/unlike/<int:post_id>", methods=["POST"])
-async def like(post_id):
+async def unlike(post_id):
     auth0 = init_auth0()
     store_options = {"request": request}
     user = await auth0.get_user(store_options)
