@@ -39,7 +39,21 @@
         <!-- Recent Posts -->
         <section>
 
-            <h3>Recent Posts</h3>
+            <h3>{{ filter_type|capitalize }} Posts</h3>
+            <details class="dropdown">
+                <summary class="btn btn-filter">Filter</summary>
+                <ul class="pure-menu-list">
+                  <li class="pure-menu-item"> 
+                      <a href="{{ url_for('feeds', filter='recent') }}" class="pure-menu-link">Recent</a> 
+                  </li> 
+                  <li class="pure-menu-item"> 
+                      <a href="{{ url_for('feeds', filter='happiness') }}" class="pure-menu-link">Happiness</a> 
+                  </li> 
+                  <li class="pure-menu-item"> 
+                      <a href="{{ url_for('feeds', filter='following') }}" class="pure-menu-link">Following</a> 
+                  </li>
+                </ul>
+            </details>
             {% if posts == None %}
             <h3> No Recent Posts</h3>
         {% else %}
@@ -62,7 +76,6 @@
 
                     </div>
 
-                    <a href="#" class="btn">Follow</a>
 
                 </div>
 
@@ -98,13 +111,13 @@
             {% endfor %}
             {% if page > 1 %}
 
-            <a href="{{url_for('feeds', page=page-1)}}">
+            <a href="{{url_for('feeds', page=page-1, filter=filter_type)}}">
                 <button class="btn btn-primary">Previous</button>
             </a>
             {% endif %}
             <span>Page {{page}} of {{total_pages}}</span>
 
-            {% if page < total_pages %} <a href="{{url_for('feeds', page=page + 1)}}">
+            {% if page < total_pages %} <a href="{{url_for('feeds', page=page + 1, filter=filter_type)}}">
                 <button class="btn btn-primary">Next</button>
                 </a>
                 {% endif %}

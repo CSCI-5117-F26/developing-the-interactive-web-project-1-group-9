@@ -184,8 +184,8 @@
 
                     </div>
             
+                    {% if is_owner %}
                     <!-- Edit dropdown -->
-                     {% if is_owner %}
                     <details class="dropdown">
                         <summary class="btn">•••</summary>
             
@@ -218,10 +218,12 @@
                 <div class="post-actions">
                     {% if post.liked %}
                     <form action="/unlike/{{ post.post_id }}" method="POST">
+                        {{ post_unlike_form.hidden_tag() }}
                         <button type="submit" class="post-action">🚫👍 {{ post.likes }} Happiness</button>
                     </form>
                     {% else %}
                     <form action="/like/{{ post.post_id }}" method="POST">
+                        {{ post_like_form.hidden_tag() }}
                         <button type="submit" class="post-action">👍 {{ post.likes }} Happiness</button>
                     </form>
                     {% endif %}
@@ -257,19 +259,21 @@
             {% endif %}
             
             {% endfor %}
-            {% if page > 1 %}
+            {% if page is defined and page is not none %}
+              {% if page > 1 %}
 
-            <a href="{{url_for('user_profile', username=user.username, page=page-1)}}">
-                <button class="btn btn-primary">Previous</button>
-            </a>
-            {% endif %}
-            <span>Page {{page}} of {{total_pages}}</span>
+              <a href="{{url_for('user_profile', username=user.username, page=page-1)}}">
+                  <button class="btn btn-primary">Previous</button>
+              </a>
+              {% endif %}
+              <span>Page {{page}} of {{total_pages}}</span>
 
-            {% if page < total_pages %} <a href="{{url_for('user_profile', username=user.username, page=page + 1)}}">
-                <button class="btn btn-primary">Next</button>
-                </a>
-                {% endif %}
-                {% endif %}
+              {% if page < total_pages %} <a href="{{url_for('user_profile', username=user.username, page=page + 1)}}">
+                  <button class="btn btn-primary">Next</button>
+                  </a>
+                  {% endif %}
+                  {% endif %}
+              {% endif %}
         </main>
     </div>
 

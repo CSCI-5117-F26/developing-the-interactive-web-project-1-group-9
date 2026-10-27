@@ -19,6 +19,11 @@ app.secret_key = os.getenv('AUTH0_SECRET')
 load_dotenv()
 # url =  os.environ["DATABASE_URL"]
 
+
+prev_search = ""
+prev_type = ""
+prev_term = ""
+
 @app.route("/")
 async def index():
     return redirect(url_for('feeds'))
@@ -118,59 +123,63 @@ class CreatePostForm(FlaskForm):
 
 @app.route("/feeds")
 async def feeds():
+    filter_type = request.args.get('filter', 'recent')
+    print(filter_type)
     auth0 = init_auth0()
     store_options = {"request": request}
     user = await auth0.get_user(store_options)
     # Whatever logic we use to personalize feed to user goes here
-    posts = get_posts_with_usernames()
     search_form = SearchForm()
     post_like_form = PostLikeForm()
     post_unlike_form = PostUnlikeForm()
     create_post_form = CreatePostForm()
+    if filter_type == "following" and not user:
+      return redirect(url_for('login'))
+    userid = get_user_by_auth0(user["sub"]) if user else None
+    posts = get_posts_with_usernames(filter_type, userid) 
     if posts:
-        if user:
-            userid = get_user_by_auth0(user["sub"])
-            for post in posts:
-                post["liked"] = has_liked(userid, post["post_id"])
-        else:
-            for post in posts:
-                post["liked"] = False
-
-        page = request.args.get('page', 1, type=int)
-        per_page = 5
-        start = (page - 1) * per_page
-        end = start + per_page
-        total_pages = (len(posts) + per_page - 1) // per_page
-        posts_on_page = posts[start:end]
-        return render_template("feeds.html", posts=posts_on_page, total_pages = total_pages, page=page, search_form=search_form, post_like_form=post_like_form, post_unlike_form=post_unlike_form, create_post_form=create_post_form)
-    return render_template("feeds.html", posts=posts, search_form=search_form, post_like_form=post_like_form, post_unlike_form=post_unlike_form, create_post_form=create_post_form)
+      page = request.args.get('page', 1, type=int)
+      per_page = 5
+      start = (page - 1) * per_page
+      end = start + per_page
+      total_pages = (len(posts) + per_page - 1) // per_page
+      posts_on_page = posts[start:end]
+      return render_template("feeds.html", posts=posts_on_page, total_pages = total_pages, page=page, filter_type=filter_type, search_form=search_form, post_like_form=post_like_form, post_unlike_form=post_unlike_form, create_post_form=create_post_form)
+    return render_template("feeds.html", posts=posts, filter_type=filter_type, search_form=search_form, post_like_form=post_like_form, post_unlike_form=post_unlike_form, create_post_form=create_post_form)
 
 
 @app.route('/search', methods=["POST", "GET"])
 async def search():
     search_form = SearchForm()
+    post_like_form = PostLikeForm()
+    post_unlike_form = PostUnlikeForm()
     if request.method == 'POST':
         if search_form.validate():
             search_term = search_form.search.data
             print("search term:")
             print (search_term)
+            page = 1
+        else:
+            print("Someone tried to search but form failed")
+            redirect(url_for('feeds'))
     else:
         # request comes from pagination
         search_term = request.args.get('keyword')
+        page = request.args.get('page', 1, type=int)
     
     search_results = search_database(search_term, 20)
-    print("search results")
-    print (search_results)
-    search_type = search_term.startswith('@')
-    if search_results:
-        page = request.args.get('page', 1, type=int)
-        per_page = 5
-        start = (page - 1) * per_page
-        end = start + per_page
-        total_pages = (len(search_results) + per_page - 1) // per_page
-        results_on_page = search_results[start:end]
-        return render_template("search.html", search_results=results_on_page, profile=search_type, search_term=search_term, total_pages = total_pages, page=page,pagination=True, search_form=search_form)
-    return render_template("search.html", search_results=search_results, profile=search_type, search_term=search_term, search_form=search_form)
+    if search_term != None:
+      search_type = search_term.startswith('@')
+      if search_results:  
+          page = request.args.get('page', 1, type=int)
+          per_page = 5
+          start = (page - 1) * per_page
+          end = start + per_page
+          total_pages = (len(search_results) + per_page - 1) // per_page
+          results_on_page = search_results[start:end]
+          return render_template("search.html", search_results=results_on_page, profile=search_type, search_term=search_term, total_pages = total_pages, page=page,pagination=True, search_form=search_form, post_like_form=post_like_form, post_unlike_form=post_unlike_form)
+      return render_template("search.html", search_results=search_results, profile=search_type, search_term=search_term, search_form=search_form, post_like_form=post_like_form, post_unlike_form=post_unlike_form)
+    return redirect('/feeds')
 
 # All right folks we got a whole bunch of forms in profile that need to be protected at all costs!!!
 # FileAllowed(['jpg', 'jpeg', 'png']), Optional()
@@ -230,8 +239,9 @@ async def user_profile(username):
     post_unlike_form = PostUnlikeForm()
     post_edit_form = None
     search_form = SearchForm()
+    current_user_id = None
     if current_user:
-        current_user_id = get_user_by_auth0(current_user["sub"])
+        current_user_id = get_user_by_auth0(current_user["sub"]) 
         if current_user_id == user["id"]:
             is_owner = True
             auth_logout_form = AuthLogoutForm()
@@ -245,18 +255,10 @@ async def user_profile(username):
             else:
                 profile_follow_form = ProfileFollowForm()
 
-    posts = get_posts_by_id(user["id"])
+    posts = get_posts_by_id(user["id"], current_user_id)
     following_users = get_following(user["id"])
     followers = get_followers(user["id"])
     if posts:
-        if user:
-            userid = get_user_by_auth0(current_user["sub"])
-            for post in posts:
-                post["liked"] = has_liked(userid, post["post_id"])
-        else:
-            for post in posts:
-                post["liked"] = False
-        
         page = request.args.get('page', 1, type=int)
         per_page = 5
         start = (page - 1) * per_page
@@ -288,6 +290,7 @@ async def update_profile():
         profile_banner = form.profile_banner.data
     else:
         print("Someone tried to edit profile %s but form failed", userid)
+        print(form.errors)
 
     # Since everything is set to None, just silently fail to leak
     # as little information as posisble to attacker. I guess timing
@@ -339,6 +342,8 @@ async def post_page(post_id):
     auth_user = await auth0.get_user(store_options)
     post = get_post(post_id)
     comments = get_comments(post_id)
+    if not comments:
+      comments = ""
     liked = False
     search_form = SearchForm()
     post_like_form = PostLikeForm()
