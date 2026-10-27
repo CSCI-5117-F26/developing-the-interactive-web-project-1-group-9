@@ -585,6 +585,39 @@ def has_liked(userid, postid):
         return True
     return False
 
+def like_comment(userid, comment_id):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""INSERT INTO comment_likes (user_id, comment_id) VALUES (%s, %s) ON CONFLICT DO NOTHING RETURNING user_id;""", (userid, comment_id))
+    unliked = cur.fetchone()
+    if unliked:
+        cur.execute("""UPDATE comments SET likes_count = likes_count + 1 WHERE id = %s;""", (comment_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def unlike_comment(userid, comment_id):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""DELETE FROM comment_likes WHERE user_id = %s AND comment_id = %s RETURNING user_id;""", (userid, comment_id))
+    liked = cur.fetchone()
+    if liked:
+        cur.execute("""UPDATE comments SET likes_count = GREATEST(likes_count - 1, 0) WHERE id = %s;""", (comment_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def has_liked_comment(userid, comment_id):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""SELECT 1 FROM comment_likes WHERE user_id = %s AND comment_id = %s;""", (userid, comment_id))
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    if result:
+        return True
+    return False
+
 def delete_post_db(userid, postid):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
