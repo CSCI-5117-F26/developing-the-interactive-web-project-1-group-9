@@ -17,14 +17,14 @@
             <!-- Make link to profile for each profile -->
             <span class="pure-menu-heading">Profiles</span>
             <ul class="pure-menu-list">
-                {% for user_id, username, bio in search_results %}
+                {% for user_id, username, nickname, bio in search_results %}
                 <li class="pure-menu-item">
                     <a href={{'/profile/{}'.format(username)}} class="pure-menu-link">
                         <article class="card post">
                             <div class="post-header">
                                 <div class="post-author">
                                     <img src={{'/pfp/{}'.format(user_id)}} " class=" post-avatar">
-                                    <strong>{{ username }}</strong>
+                                    <strong>{{ nickname }}</strong>
                                 </div>
                             </div>
                             <p class="post-body">{{ bio }}</p>
