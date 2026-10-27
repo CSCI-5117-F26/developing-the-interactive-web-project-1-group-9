@@ -219,6 +219,13 @@ async def post_page(post_id):
     comments = get_comments(post_id)
     if not comments:
       comments = ""
+    if auth_user and comments:
+        userid = get_user_by_auth0(auth_user["sub"])
+        for comment in comments:
+            comment["liked"] = has_liked_comment(userid, comment["comment_id"])
+    elif comments:
+        for comment in comments:
+            comment["liked"] = False
     liked = False
     if auth_user:
         userid = get_user_by_auth0(auth_user["sub"])
@@ -403,3 +410,25 @@ async def unlike(post_id):
     userid = get_user_by_auth0(user["sub"])
     unlike_post(userid, post_id)
     return redirect(request.referrer or url_for("feeds"))
+
+@app.route("/comment/<int:comment_id>/like", methods=["POST"])
+async def like_comment_route(comment_id):
+    auth0 = init_auth0()
+    store_options = {"request": request}
+    user = await auth0.get_user(store_options)
+    if not user:
+        return redirect(url_for("login"))
+    userid = get_user_by_auth0(user["sub"])
+    like_comment(userid, comment_id)
+    return redirect(request.referrer)
+
+@app.route("/comment/<int:comment_id>/unlike", methods=["POST"])
+async def unlike_comment_route(comment_id):
+    auth0 = init_auth0()
+    store_options = {"request": request}
+    user = await auth0.get_user(store_options)
+    if not user:
+        return redirect(url_for("login"))
+    userid = get_user_by_auth0(user["sub"])
+    unlike_comment(userid, comment_id)
+    return redirect(request.referrer)

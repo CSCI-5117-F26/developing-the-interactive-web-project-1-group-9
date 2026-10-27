@@ -459,6 +459,7 @@ def get_comments(postid):
     cur.execute(
       """
       SELECT
+        comments.id,
         comments.post_id,
         comments.content,
         users.username,
@@ -480,12 +481,13 @@ def get_comments(postid):
     return [
       {
           "comment_id": comment[0],
-          "content": comment[1],
-          "username": comment[2],
-          "likes": comment[3],
-          "time_created": (comment[4] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
-          "pfp": f"/pfp/{comment[5]}",
-          "nickname": comment[6]
+            "post_id": comment[1],
+          "content": comment[2],
+          "username": comment[3],
+          "likes": comment[4],
+          "time_created": (comment[5] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
+          "pfp": f"/pfp/{comment[6]}",
+          "nickname": comment[7]
       }
       for comment in comments
     ]
@@ -578,6 +580,39 @@ def has_liked(userid, postid):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute("""SELECT 1 FROM likes WHERE user_id = %s AND post_id = %s;""", (userid, postid))
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    if result:
+        return True
+    return False
+
+def like_comment(userid, comment_id):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""INSERT INTO comment_likes (user_id, comment_id) VALUES (%s, %s) ON CONFLICT DO NOTHING RETURNING user_id;""", (userid, comment_id))
+    unliked = cur.fetchone()
+    if unliked:
+        cur.execute("""UPDATE comments SET likes_count = likes_count + 1 WHERE id = %s;""", (comment_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def unlike_comment(userid, comment_id):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""DELETE FROM comment_likes WHERE user_id = %s AND comment_id = %s RETURNING user_id;""", (userid, comment_id))
+    liked = cur.fetchone()
+    if liked:
+        cur.execute("""UPDATE comments SET likes_count = GREATEST(likes_count - 1, 0) WHERE id = %s;""", (comment_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def has_liked_comment(userid, comment_id):
+    conn = psycopg.connect(os.environ["DB_URL"])
+    cur = conn.cursor()
+    cur.execute("""SELECT 1 FROM comment_likes WHERE user_id = %s AND comment_id = %s;""", (userid, comment_id))
     result = cur.fetchone()
     cur.close()
     conn.close()
