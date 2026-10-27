@@ -29,32 +29,17 @@
                 <label for="post">Share some positivity ☀️</label>
                 <p></p>
 
-                <textarea id="post" name="post" rows="3" placeholder="What's making you happy today?" required></textarea>
-
-                <button type="submit" class="btn btn-primary">
-                    Post
-                </button>
+                {{ create_post_form.hidden_tag() }}
+                {{ create_post_form.post }}
+                {{ create_post_form.submit.label }}
+                {{ create_post_form.submit }}
 
             </form>
         </section>
         <!-- Recent Posts -->
         <section>
 
-            <h3>{{ filter_type|capitalize }} Posts</h3>
-            <details class="dropdown">
-                <summary class="btn btn-filter">Filter</summary>
-                <ul class="pure-menu-list">
-                  <li class="pure-menu-item"> 
-                      <a href="{{ url_for('feeds', filter='recent') }}" class="pure-menu-link">Recent</a> 
-                  </li> 
-                  <li class="pure-menu-item"> 
-                      <a href="{{ url_for('feeds', filter='happiness') }}" class="pure-menu-link">Happiness</a> 
-                  </li> 
-                  <li class="pure-menu-item"> 
-                      <a href="{{ url_for('feeds', filter='following') }}" class="pure-menu-link">Following</a> 
-                  </li>
-                </ul>
-            </details>
+            <h3>Recent Posts</h3>
             {% if posts == None %}
             <h3> No Recent Posts</h3>
         {% else %}
@@ -77,6 +62,7 @@
 
                     </div>
 
+                    <a href="#" class="btn">Follow</a>
 
                 </div>
 
@@ -91,16 +77,18 @@
 
                     {% if post.liked %}
                     <form action="/unlike/{{ post.post_id }}" method="POST">
-                        <button type="submit" class="post-action">🚫👍 {{ post.likes }} Happiness</button>
+                        {{ post_unlike_form.hidden_tag() }}
+                        {{ post_unlike_form.submit(value="🚫👍 %s Happiness"|format(posts.likes)) }}
                     </form>
                     {% else %}
                     <form action="/like/{{ post.post_id }}" method="POST">
-                        <button type="submit" class="post-action">👍 {{ post.likes }} Happiness</button>
+                        {{ post_like_form.hidden_tag() }}
+                        {{ post_like_form.submit(value="👍 %s Happiness"|format(posts.likes)) }}
                     </form>
                     {% endif %}
 
                     <a class="post-action" href="{{ url_for('post_page', post_id=post.post_id) }}">
-                        {{post.comment_count}} Comments
+                        {{ post.comment_count }} Comments
                     </a>
 
                 </div>
@@ -110,13 +98,13 @@
             {% endfor %}
             {% if page > 1 %}
 
-            <a href="{{url_for('feeds', page=page-1, filter=filter_type)}}">
+            <a href="{{url_for('feeds', page=page-1)}}">
                 <button class="btn btn-primary">Previous</button>
             </a>
             {% endif %}
             <span>Page {{page}} of {{total_pages}}</span>
 
-            {% if page < total_pages %} <a href="{{url_for('feeds', page=page + 1, filter=filter_type)}}">
+            {% if page < total_pages %} <a href="{{url_for('feeds', page=page + 1)}}">
                 <button class="btn btn-primary">Next</button>
                 </a>
                 {% endif %}

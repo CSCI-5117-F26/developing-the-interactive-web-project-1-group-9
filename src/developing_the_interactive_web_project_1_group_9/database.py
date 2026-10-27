@@ -266,7 +266,7 @@ def get_post(postid):
         "username": post[5],
         "time_created": (post[6] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
         "pfp": f"/pfp/{post[1]}",
-        "nickname": post[7]
+        "nickname": post[6]
     }
 
 def get_posts():
@@ -279,86 +279,29 @@ def get_posts():
     conn.close()
     return post
 
-def get_posts_with_usernames(filter_type, user_id=None):
+def get_posts_with_usernames():
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
-    if filter_type == "recent":
-      cur.execute(
-        """
-        SELECT
-          posts.id,
-          posts.content,
-          users.username,
-          posts.likes_count,
-          posts.comment_count,
-          posts.post_created,
-          posts.user_id,
-          users.nickname,
-          CASE
-                WHEN likes.user_id IS NOT NULL THEN TRUE
-                ELSE FALSE
-          END AS liked
-        FROM posts
-        JOIN users ON posts.user_id = users.id
-        LEFT JOIN likes
-            ON likes.post_id = posts.id
-            AND likes.user_id = %s
-        ORDER BY post_created DESC;
-        """, (user_id,)
-      )
-    elif filter_type == "happiness":
-      cur.execute(
-        """
-        SELECT
-          posts.id,
-          posts.content,
-          users.username,
-          posts.likes_count,
-          posts.comment_count,
-          posts.post_created,
-          posts.user_id,
-          users.nickname,
-          CASE
-                WHEN likes.user_id IS NOT NULL THEN TRUE
-                ELSE FALSE
-          END AS liked
-        FROM posts
-        JOIN users ON posts.user_id = users.id
-        LEFT JOIN likes
-            ON likes.post_id = posts.id
-            AND likes.user_id = %s
-        ORDER BY posts.likes_count DESC;
-        """, (user_id,)
-      )
-    elif filter_type == "following":
-      cur.execute(
-        """
-        SELECT
-          posts.id,
-          posts.content,
-          users.username,
-          posts.likes_count,
-          posts.comment_count,
-          posts.post_created,
-          posts.user_id,
-          users.nickname,
-          CASE
-                WHEN likes.user_id IS NOT NULL THEN TRUE
-                ELSE FALSE
-          END AS liked
-        FROM posts
-        JOIN users ON posts.user_id = users.id
-        LEFT JOIN likes
-            ON likes.post_id = posts.id
-            AND likes.user_id = %s
-        JOIN follows ON follows.following_id = posts.user_id
-        WHERE follows.follower_id = %s
-        ORDER BY post_created DESC;
-        """, (user_id, user_id)
-      )
+    cur.execute(
+      """
+      SELECT
+        posts.id,
+        posts.content,
+        users.username,
+        posts.likes_count,
+        posts.comment_count,
+        posts.post_created,
+        posts.user_id,
+        users.nickname
+      FROM posts
+      JOIN users ON posts.user_id = users.id
+      ORDER BY post_created DESC;
+      """
+    )
     posts = cur.fetchall()
     if not posts:
       return None
+    
     return [
         {
           "post_id": post[0],
@@ -368,13 +311,12 @@ def get_posts_with_usernames(filter_type, user_id=None):
           "comment_count": post[4],
           "time_created": (post[5] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
           "pfp": f"/pfp/{post[6]}",
-          "nickname": post[7],
-          "has_liked": post[8]
+          "nickname": post[7]
       }
       for post in posts
     ]
 
-def get_posts_by_id(userid, currid=None):
+def get_posts_by_id(userid):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     cur.execute(
@@ -385,17 +327,10 @@ def get_posts_by_id(userid, currid=None):
         posts.likes_count,
         posts.comment_count,
         posts.post_created,
-        posts.user_id,
-        CASE
-                WHEN likes.user_id IS NOT NULL THEN TRUE
-                ELSE FALSE
-        END AS liked
+        posts.user_id
       FROM posts
-      LEFT JOIN likes
-            ON likes.post_id = posts.id
-            AND likes.user_id = %s
       WHERE posts.user_id = %s
-      ORDER BY post_created DESC;""", (currid, userid)
+      ORDER BY post_created DESC;""", (userid,)
     )
     posts = cur.fetchall()
     if not posts:
@@ -494,62 +429,53 @@ def search_database(search_term, fetch_amount):
     conn = psycopg.connect(os.environ["DB_URL"])
     cur = conn.cursor()
     # Have to do some shenanigans because %%s% would not pass the string argument in
-    if search_term:
-      if search_term.startswith('@'):
-          command = """
-              SELECT id, username, bio
-              FROM users 
-              WHERE username ILIKE '%%' || %s || '%%'
-                  OR bio ILIKE '%%' || %s || '%%'
-              LIMIT %s;
-          """
-          cur.execute(command, (search_term[1:], search_term[1:], fetch_amount))
-          profiles = cur.fetchall()
-          print("searched profiles:")
-          print(profiles)
-          conn.commit()
-          cur.close()
-          conn.close()
-          return profiles
-      else:
-          # Yoink Ali's code again
-          cur.execute (
-              """
-              WITH simlar_posts AS (
-                  SELECT * FROM posts WHERE title ILIKE '%%' || %s || '%%' OR content ILIKE '%%' || %s || '%%' LIMIT %s
-              )
-              SELECT
-                  simlar_posts.id,
-                  simlar_posts.content,
-                  users.username,
-                  simlar_posts.likes_count,
-                  simlar_posts.comment_count,
-                  simlar_posts.post_created,
-                  simlar_posts.user_id,
-                  users.nickname
-              FROM simlar_posts
-              JOIN users ON simlar_posts.user_id = users.id;
-              """
-              , (search_term, search_term, fetch_amount)
-          )
-          posts = cur.fetchall()
-          print("searched posts")
-          print(posts)
-          cur.close()
-          conn.close()
-          return [
-            {
-              "post_id": post[0],
-              "content": post[1],
-              "username": post[2],
-              "likes": post[3],
-              "comment_count": post[4],
-              "time_created": (post[5] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
-              "pfp": f"/pfp/{post[6]}",
-              "nickname": post[7]
-            }
-            for post in posts
-          ]
+    if search_term.startswith('@'):
+        command = """
+            SELECT id, nickname, bio
+            FROM users 
+            WHERE nickname ILIKE '%%' || %s || '%%'
+                OR bio ILIKE '%%' || %s || '%%'
+            LIMIT %s;
+        """
+        cur.execute(command, (search_term[1:], search_term[1:], fetch_amount))
+        profiles = cur.fetchall()
+        print("searched profiles:")
+        print(profiles)
+        conn.commit()
+        cur.close()
+        conn.close()
+        return profiles
+    else:
+        # Yoink Ali's code again
+        cur.execute (
+            """
+            WITH simlar_posts AS (
+                SELECT * FROM posts WHERE content ILIKE '%%' || %s || '%%' LIMIT %s
+            )
+            SELECT
+                simlar_posts.id,
+                simlar_posts.content,
+                users.username,
+                simlar_posts.likes_count,
+                simlar_posts.comment_count,
+                simlar_posts.post_created
+            FROM simlar_posts
+            JOIN users ON simlar_posts.user_id = users.id;
+            """
+            , (search_term, search_term, fetch_amount)
+        )
+        posts = cur.fetchall()
+        if posts:
+            posts = [
+            [row[0], row[1], row[2], row[3], row[4], row[5].strftime("%m/%d/%y %I:%M:%S %p")]
+            for row in posts
+        ]
+        print("searched posts")
+        print(posts)
+        conn.commit()
+        cur.close()
+        conn.close()
+        return posts
 
 #like management
 def like_post(userid, postid):
