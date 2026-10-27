@@ -499,7 +499,7 @@ def search_database(search_term, fetch_amount):
     if search_term:
       if search_term.startswith('@'):
           command = """
-              SELECT id, nickname, bio
+              SELECT id, username, nickname, bio
               FROM users 
               WHERE nickname ILIKE '%%' || %s || '%%'
                   OR bio ILIKE '%%' || %s || '%%'
