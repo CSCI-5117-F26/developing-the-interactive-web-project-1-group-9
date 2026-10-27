@@ -101,18 +101,20 @@
 
             {% endfor %}
         </section>
-        {% if page > 1 %}
-        <a href="{{url_for('search',keyword=search_term, page=page-1)}}">
-            <button class="btn btn-primary">Previous</button>
-        </a>
-        {% endif %}
-        <span>Page {{page}} of {{total_pages}}</span>
+        {% if page is defined and page is not none %}
+          {% if page > 1 %}
+          <a href="{{url_for('search',keyword=search_term, page=page-1)}}">
+              <button class="btn btn-primary">Previous</button>
+          </a>
+          {% endif %}
+          <span>Page {{page}} of {{total_pages}}</span>
 
-        {% if page < total_pages %} <a href="{{url_for('search',keyword=search_term,page=page + 1)}}">
-            <button class="btn btn-primary">Next</button>
-            </a>
-            {% endif %}
-            {% endif %}
+          {% if page < total_pages %} <a href="{{url_for('search',keyword=search_term,page=page + 1)}}">
+              <button class="btn btn-primary">Next</button>
+              </a>
+          {% endif %}
+        {% endif %}
+        {% endif %}
 
     </main>
 </div>
