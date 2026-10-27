@@ -15,6 +15,9 @@ load_dotenv()
 # url =  os.environ["DATABASE_URL"]
 
 
+prev_search = ""
+prev_type = ""
+prev_term = ""
 
 @app.route("/")
 async def index():
@@ -97,25 +100,25 @@ async def feeds():
 async def search():
     if request.method == 'POST':
         search_term = request.form.get("search")
-        print("search term")
-        print (search_term)
+        page = 1
     else:
         # request comes from pagination
         search_term = request.args.get('keyword')
+        page = request.args.get('page', 1, type=int)
     
     search_results = search_database(search_term, 20)
-    print("search results")
-    print (search_results)
-    search_type = search_term.startswith('@')
-    if search_results:
-        page = request.args.get('page', 1, type=int)
-        per_page = 5
-        start = (page - 1) * per_page
-        end = start + per_page
-        total_pages = (len(search_results) + per_page - 1) // per_page
-        results_on_page = search_results[start:end]
-        return render_template("search.html", search_results=results_on_page, profile=search_type, search_term=search_term, total_pages = total_pages, page=page,pagination=True)
-    return render_template("search.html", search_results=search_results, profile=search_type, search_term=search_term)
+    if search_term != None:
+      search_type = search_term.startswith('@')
+      if search_results:  
+          page = request.args.get('page', 1, type=int)
+          per_page = 5
+          start = (page - 1) * per_page
+          end = start + per_page
+          total_pages = (len(search_results) + per_page - 1) // per_page
+          results_on_page = search_results[start:end]
+          return render_template("search.html", search_results=results_on_page, profile=search_type, search_term=search_term, total_pages = total_pages, page=page,pagination=True)
+      return render_template("search.html", search_results=search_results, profile=search_type, search_term=search_term)
+    return redirect('/feeds')
 
 # default profile call routes to current auth0 users profile
 @app.route("/profile")
@@ -151,13 +154,21 @@ async def user_profile(username):
             following = is_following(current_user_id, user["id"])
 
     posts = get_posts_by_id(user["id"])
+    if current_user:
+        userid = get_user_by_auth0(current_user["sub"])
+        for post in posts:
+            post["liked"] = has_liked(userid, post["post_id"])
+    else:
+        for post in posts:
+            post["liked"] = False
     following_users = get_following(user["id"])
     followers = get_followers(user["id"])
     if posts:
         if user:
-            userid = get_user_by_auth0(current_user["sub"])
-            for post in posts:
-                post["liked"] = has_liked(userid, post["post_id"])
+            if current_user:
+              userid = get_user_by_auth0(current_user["sub"])
+              for post in posts:
+                  post["liked"] = has_liked(userid, post["post_id"])
         else:
             for post in posts:
                 post["liked"] = False
@@ -225,6 +236,8 @@ async def post_page(post_id):
     auth_user = await auth0.get_user(store_options)
     post = get_post(post_id)
     comments = get_comments(post_id)
+    if not comments:
+      comments = ""
     liked = False
     if auth_user:
         userid = get_user_by_auth0(auth_user["sub"])
