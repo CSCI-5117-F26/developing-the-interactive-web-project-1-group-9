@@ -459,6 +459,7 @@ def get_comments(postid):
     cur.execute(
       """
       SELECT
+        comments.id,
         comments.post_id,
         comments.content,
         users.username,
@@ -480,12 +481,13 @@ def get_comments(postid):
     return [
       {
           "comment_id": comment[0],
-          "content": comment[1],
-          "username": comment[2],
-          "likes": comment[3],
-          "time_created": (comment[4] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
-          "pfp": f"/pfp/{comment[5]}",
-          "nickname": comment[6]
+            "post_id": comment[1],
+          "content": comment[2],
+          "username": comment[3],
+          "likes": comment[4],
+          "time_created": (comment[5] - timedelta(hours=5)).strftime("%m/%d/%y %I:%M:%S %p"),
+          "pfp": f"/pfp/{comment[6]}",
+          "nickname": comment[7]
       }
       for comment in comments
     ]
