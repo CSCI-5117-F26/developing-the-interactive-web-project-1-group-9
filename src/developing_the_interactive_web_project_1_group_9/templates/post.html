@@ -114,19 +114,21 @@
 
         </article>
         {% endfor %}
-        {% if page > 1 %}
+        {% if page is defined and page is not none %}
+          {% if page > 1 %}
 
-        <a href="{{url_for('post_page', page=page-1, post_id=post_id)}}">
-            <button class="btn btn-primary">Previous</button>
-        </a>
+          <a href="{{url_for('post_page', page=page-1, post_id=post_id)}}">
+              <button class="btn btn-primary">Previous</button>
+          </a>
+          {% endif %}
+          <span>Page {{page}} of {{total_pages}}</span>
+
+          {% if page < total_pages %} <a href="{{url_for('post_page', page=page + 1, post_id=post_id)}}">
+              <button class="btn btn-primary">Next</button>
+              </a>
+          {% endif %}
+          {% endif %}
         {% endif %}
-        <span>Page {{page}} of {{total_pages}}</span>
-
-        {% if page < total_pages %} <a href="{{url_for('post_page', page=page + 1, post_id=post_id)}}">
-            <button class="btn btn-primary">Next</button>
-            </a>
-            {% endif %}
-            {% endif %}
     </section>
 
 

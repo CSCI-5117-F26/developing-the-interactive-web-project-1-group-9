@@ -155,9 +155,10 @@ async def user_profile(username):
 
     posts = get_posts_by_id(user["id"])
     if current_user:
-        userid = get_user_by_auth0(current_user["sub"])
-        for post in posts:
-            post["liked"] = has_liked(userid, post["post_id"])
+        if posts:
+            userid = get_user_by_auth0(current_user["sub"])
+            for post in posts:
+                post["liked"] = has_liked(userid, post["post_id"])
     else:
         for post in posts:
             post["liked"] = False
