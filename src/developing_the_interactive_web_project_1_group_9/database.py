@@ -499,9 +499,9 @@ def search_database(search_term, fetch_amount):
     if search_term:
       if search_term.startswith('@'):
           command = """
-              SELECT id, username, bio
+              SELECT id, nickname, bio
               FROM users 
-              WHERE username ILIKE '%%' || %s || '%%'
+              WHERE nickname ILIKE '%%' || %s || '%%'
                   OR bio ILIKE '%%' || %s || '%%'
               LIMIT %s;
           """
@@ -518,7 +518,7 @@ def search_database(search_term, fetch_amount):
           cur.execute (
               """
               WITH simlar_posts AS (
-                  SELECT * FROM posts WHERE title ILIKE '%%' || %s || '%%' OR content ILIKE '%%' || %s || '%%' LIMIT %s
+                  SELECT * FROM posts WHERE content ILIKE '%%' || %s || '%%' LIMIT %s
               )
               SELECT
                   simlar_posts.id,
@@ -532,7 +532,7 @@ def search_database(search_term, fetch_amount):
               FROM simlar_posts
               JOIN users ON simlar_posts.user_id = users.id;
               """
-              , (search_term, search_term, fetch_amount)
+              , (search_term, fetch_amount)
           )
           posts = cur.fetchall()
           print("searched posts")

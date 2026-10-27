@@ -23,8 +23,9 @@
       
 
       <form class="pure-form" role="search" action={{url_for('search')}} method="POST">
-        <input class="search" type="search" name="search" placeholder="Search people and posts">
-        <button type="submit" style="display: none;"></button>
+        {{ search_form.hidden_tag() }}
+        {{ search_form.search }}
+        {{ search_form.submit(type="hidden") }}
       </form>
     </header>
   </div>

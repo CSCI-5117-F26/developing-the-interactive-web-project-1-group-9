@@ -27,10 +27,9 @@
                 A cozy little corner of the internet where positivity is encouraged and kindness comes naturally.
             </p>
             
-            <form action="/signin">
-                <button type="submit" class="btn btn-primary btn-block">
-                    Sign in
-                </button>
+            <form action="/signin" method="POST">
+                {{ form.hidden_tag() }}
+                {{ form.submit }}
             </form>
             
             <fieldset class="fieldset-divider">

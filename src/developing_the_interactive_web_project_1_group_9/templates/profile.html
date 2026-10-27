@@ -91,18 +91,19 @@
                 <!-- Dialog to show edit profile -->
                 <dialog id="edit-profile" class="profile-dialog">
                     <form action="/profile/edit" method="POST" enctype="multipart/form-data">
-                        <label>Nickname</label>
-                        <input type="text" name="nickname" maxlength="10">
-                        <br>
-                        <label>Bio</label>
-                        <textarea name="bio"></textarea>
-                        <br>
-                        <label>Profile Picture</label>
-                        <input type="file" name="profile_picture" accept="image">
-                        <br>
-                        <label>Profile Banner</label>
-                        <input type="file" name="profile_banner" accept="image">
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                            {{ profile_edit_form.hidden_tag() }}
+                            {{ profile_edit_form.nickname.label }}
+                            {{ profile_edit_form.nickname }}
+                            <br>
+                            {{ profile_edit_form.bio.label }}
+                            {{ profile_edit_form.bio }}
+                            <br>
+                            {{ profile_edit_form.profile_picture.label }}
+                            {{ profile_edit_form.profile_picture }}
+                            <br>
+                            {{ profile_edit_form.profile_banner.label }}
+                            {{ profile_edit_form.profile_banner }}
+                            {{ profile_edit_form.submit }}
                         <button type="button" class="btn" commandfor="edit-profile" command="close">Close</button>
                     </form>
                 </dialog>
@@ -111,29 +112,31 @@
                 {% if not is_owner %}
                 {% if following %}
                 <form action="/unfollow/{{ user.username }}" method="POST">
-                    <button type="submit" class="btn btn-block">
-                        Unfollow
-                    </button>
+                    {{ profile_unfollow_form.hidden_tag() }}
+                    {{ profile_unfollow_form.submit.label }}
+                    {{ profile_unfollow_form.submit }}
                 </form>
                 {% else %}
                 <form action="/follow/{{ user.username }}" method="POST">
-                    <button type="submit" class="btn btn-primary btn-block">
-                        Follow
-                    </button>
+                    {{ profile_follow_form.hidden_tag() }}
+                    {{ profile_follow_form.submit.label }}
+                    {{ profile_follow_form.submit }}
                 </form>
                 {% endif %}
                 {% endif %}
 
-                <a href="/signin" class="btn btn-block" data-show="guest">
+                <a href="/login" class="btn btn-block" data-show="guest">
                     Log in to follow
                 </a>
 
                 <p></p>
 
                 {% if is_owner %} <!-- only really wanna show this logout button to owner -->
-                <a href="/logout" class="btn btn-block">
-                    Log out
-                </a>
+                <form action="/logout" class="btn btn-block" method="POST">
+                    {{ auth_logout_form.hidden_tag() }}
+                    
+                    {{ auth_logout_form.submit }}
+                </form>
                 {% endif %}
             </div>
 
@@ -195,9 +198,8 @@
                             </li>
                             <li class="pure-menu-item">
                                 <form action="{{ url_for('delete_post', post_id=post.post_id) }}" method="POST">
-                                    <button type="submit" class="pure-menu-link">
-                                        Delete
-                                    </button>
+                                    {{ post_delete_form.hidden_tag() }}
+                                    {{ post_delete_form.submit }}
                                 </form>
                             </li>
                         </ul>
@@ -216,10 +218,12 @@
                 <div class="post-actions">
                     {% if post.liked %}
                     <form action="/unlike/{{ post.post_id }}" method="POST">
+                        {{ post_unlike_form.hidden_tag() }}
                         <button type="submit" class="post-action">🚫👍 {{ post.likes }} Happiness</button>
                     </form>
                     {% else %}
                     <form action="/like/{{ post.post_id }}" method="POST">
+                        {{ post_like_form.hidden_tag() }}
                         <button type="submit" class="post-action">👍 {{ post.likes }} Happiness</button>
                     </form>
                     {% endif %}
@@ -233,6 +237,7 @@
             </article>
             
             <!-- Edit dialog -->
+             {% if is_owner %}
             <dialog id="edit-post-{{ post.post_id }}" class="profile-dialog">
                 <form class="pure-form pure-form-stacked" action="{{ url_for('update_post', post_id=post.post_id) }}" method="POST">
                 
@@ -240,17 +245,18 @@
                         Edit your post
                     </label>
                     <p></p>
-                    <textarea id="content-{{ post.post_id }}" name="post" rows="3" required>{{ post.content }}</textarea>
+                    {{ post_edit_form.hidden_tag() }}
+                    <textarea id="content-{{ post.post_id }}" name="post" rows="3">{{ post.content }}</textarea>
                 
-                    <button type="submit" class="btn btn-primary">
-                        Save Changes
-                    </button>
+                    {{ post_edit_form.submit.label }}
+                    {{ post_edit_form.submit }}
                 
                     <button type="button" class="btn" commandfor="edit-post-{{ post.post_id }}" command="close">
                         Cancel
                     </button>
                 </form>
             </dialog>
+            {% endif %}
             
             {% endfor %}
             {% if page is defined and page is not none %}

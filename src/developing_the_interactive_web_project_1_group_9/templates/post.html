@@ -28,15 +28,13 @@
         <div class="post-actions">
             {% if liked %}
             <form action="/unlike/{{ post.post_id }}" method="POST">
-                <button type="submit" class="post-action">
-                    👍 {{ post.likes }} Happiness
-                </button>
+                {{ post_unlike_form.hidden_tag() }}
+                {{ post_unlike_form.submit(value="🚫👍 %s Happiness"|format(post.likes)) }}
             </form>
             {% else %}
             <form action="/like/{{ post.post_id }}" method="POST">
-                <button type="submit" class="post-action">
-                    👍 {{ post.likes }} Happiness
-                </button>
+                {{ post_like_form.hidden_tag() }}
+                {{ post_like_form.submit(value="👍 %s Happiness"|format(post.likes)) }}
             </form>
             {% endif %}
         </div>
@@ -56,16 +54,10 @@
 
         <section class="card">
             <form class="pure-form pure-form-stacked" action="/comment" method="POST">
-                <input type="hidden" name="post_id" value="{{post.post_id}}">
-                <label for="comment">Leave a comment!</label>
-
-                <textarea id="comment" name="comment" rows="3"
-                    placeholder="What a beautiful day for commenting!"></textarea>
-
-                <button type="submit" class="btn btn-primary">
-                    Post
-                </button>
-
+                {{ create_comment_form.hidden_tag() }}
+                {{ create_comment_form.post_id }}
+                {{ create_comment_form.comment }}
+                {{ create_comment_form.submit }}
 
             </form>
         </section>
