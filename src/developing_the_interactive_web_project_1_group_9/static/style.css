@@ -101,6 +101,19 @@ a {
     border-color: #B82F0A;
 }
 
+.btn-filter {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.btn-filter:hover {
+  background: #B82F0A;
+  border-color: #B82F0A;
+}
+
+
 .btn-block {
     width: 100%;
 }
@@ -381,6 +394,15 @@ a {
     border: 1px solid var(--border);
     border-radius: 10px;
     resize: vertical;
+}
+
+.dropdown .pure-menu-link {
+  transition: background-color 0.1s ease, color 0.1s ease;
+}
+
+.dropdown .pure-menu-link:hover {
+  background-color: #e0e0e0;
+  color: #333;
 }
 
 /* ---------- mobile ---------- */

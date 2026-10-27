@@ -72,28 +72,25 @@ async def logout():
 
 @app.route("/feeds")
 async def feeds():
+    filter_type = request.args.get('filter', 'recent')
+    print(filter_type)
     auth0 = init_auth0()
     store_options = {"request": request}
     user = await auth0.get_user(store_options)
     # Whatever logic we use to personalize feed to user goes here
-    posts = get_posts_with_usernames()
+    if filter_type == "following" and not user:
+      return redirect(url_for('login'))
+    userid = get_user_by_auth0(user["sub"]) if user else None
+    posts = get_posts_with_usernames(filter_type, userid) 
     if posts:
-        if user:
-            userid = get_user_by_auth0(user["sub"])
-            for post in posts:
-                post["liked"] = has_liked(userid, post["post_id"])
-        else:
-            for post in posts:
-                post["liked"] = False
-
-        page = request.args.get('page', 1, type=int)
-        per_page = 5
-        start = (page - 1) * per_page
-        end = start + per_page
-        total_pages = (len(posts) + per_page - 1) // per_page
-        posts_on_page = posts[start:end]
-        return render_template("feeds.html", posts=posts_on_page, total_pages = total_pages, page=page)
-    return render_template("feeds.html", posts=posts)
+      page = request.args.get('page', 1, type=int)
+      per_page = 5
+      start = (page - 1) * per_page
+      end = start + per_page
+      total_pages = (len(posts) + per_page - 1) // per_page
+      posts_on_page = posts[start:end]
+      return render_template("feeds.html", posts=posts_on_page, total_pages = total_pages, page=page, filter_type=filter_type)
+    return render_template("feeds.html", posts=posts, filter_type=filter_type)
 
 
 @app.route('/search', methods=["POST", "GET"])
@@ -146,34 +143,17 @@ async def user_profile(username):
     user["banner"] = f"/banner/{user['id']}"
     is_owner = False
     following = False
+    current_user_id = None
     if current_user:
-        current_user_id = get_user_by_auth0(current_user["sub"])
+        current_user_id = get_user_by_auth0(current_user["sub"]) 
         if current_user_id == user["id"]:
             is_owner = True
         else:
             following = is_following(current_user_id, user["id"])
-
-    posts = get_posts_by_id(user["id"])
-    if current_user:
-        if posts:
-            userid = get_user_by_auth0(current_user["sub"])
-            for post in posts:
-                post["liked"] = has_liked(userid, post["post_id"])
-    else:
-        for post in posts:
-            post["liked"] = False
+    posts = get_posts_by_id(user["id"], current_user_id)
     following_users = get_following(user["id"])
     followers = get_followers(user["id"])
     if posts:
-        if user:
-            if current_user:
-              userid = get_user_by_auth0(current_user["sub"])
-              for post in posts:
-                  post["liked"] = has_liked(userid, post["post_id"])
-        else:
-            for post in posts:
-                post["liked"] = False
-        
         page = request.args.get('page', 1, type=int)
         per_page = 5
         start = (page - 1) * per_page
