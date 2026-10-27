@@ -107,9 +107,19 @@
 
             <!-- Interactions -->
             <div class="post-actions">
-                <button type="button" class="post-action">
-                    {{comment.likes}} Happiness
-                </button>
+                {% if comment.liked %}
+                <form action="/comment/{{ comment.comment_id }}/unlike" method="POST">
+                    <button type="submit" class="post-action">
+                        👍 {{ comment.likes }} Happiness
+                    </button>
+                </form>
+                {% else %}
+                <form action="/comment/{{ comment.comment_id }}/like" method="POST">
+                    <button type="submit" class="post-action">
+                        👍 {{ comment.likes }} Happiness
+                    </button>
+                </form>
+                {% endif %}
             </div>
 
         </article>
