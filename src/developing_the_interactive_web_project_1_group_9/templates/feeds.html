@@ -91,12 +91,12 @@
                     {% if post.liked %}
                     <form action="/unlike/{{ post.post_id }}" method="POST">
                         {{ post_unlike_form.hidden_tag() }}
-                        {{ post_unlike_form.submit(value="🚫👍 %s Happiness"|format(posts.likes)) }}
+                        <button type="submit" class="post-action">🚫👍 {{ post.likes }} Happiness</button>
                     </form>
                     {% else %}
                     <form action="/like/{{ post.post_id }}" method="POST">
                         {{ post_like_form.hidden_tag() }}
-                        {{ post_like_form.submit(value="👍 %s Happiness"|format(posts.likes)) }}
+                        <button type="submit" class="post-action">👍 {{ post.likes }} Happiness</button>
                     </form>
                     {% endif %}
 
