@@ -91,7 +91,8 @@
                 <!-- Dialog to show edit profile -->
                 <dialog id="edit-profile" class="profile-dialog">
                     <form action="/profile/edit" method="POST" enctype="multipart/form-data">
-                        <input type="text" name="nickname" maxlength="50">
+                        <label>Nickname</label>
+                        <input type="text" name="nickname" maxlength="10">
                         <br>
                         <label>Bio</label>
                         <textarea name="bio"></textarea>
@@ -101,9 +102,9 @@
                         <br>
                         <label>Profile Banner</label>
                         <input type="file" name="profile_banner" accept="image">
-                        <button type="submit" class="btn btn-block">Save Changes</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="button" class="btn" commandfor="edit-profile" command="close">Close</button>
                     </form>
-                    <button commandfor="edit-profile" command="close">Close</button>
                 </dialog>
                 {% endif %}
 
@@ -150,8 +151,22 @@
             <p> My Posts </p>
             <hr>
 
-            {% for post in posts %}
+            <!-- show message posting feedback -->
+            {% for message in get_flashed_messages() %}
+            <div class="flash-alert" role="alert">
+                {{ message }}
             
+                <button type="button" class="flash-alert-close" onclick="this.parentElement.remove()" aria-label="Close">
+                    &times;
+                </button>
+            </div>
+            {% endfor %}
+
+            {% if posts == None %}
+            <h3> No Posts</h3>
+            {% else %}
+            {% for post in posts %}
+
             <article class="card post">
 
                 <!-- Author -->
@@ -165,8 +180,27 @@
                         </div>
 
                     </div>
-
-                    <a href="#" class="btn">Follow</a>
+            
+                    <!-- Edit dropdown -->
+                    <details class="dropdown">
+                        <summary class="btn">•••</summary>
+            
+                        <ul class="pure-menu-list">
+                            <li class="pure-menu-item">
+                                <button type="button" class="pure-menu-link" commandfor="edit-post-{{ post.post_id }}"
+                                    command="show-modal">
+                                    Edit
+                                </button>
+                            </li>
+                            <li class="pure-menu-item">
+                                <form action="{{ url_for('delete_post', post_id=post.post_id) }}" method="POST">
+                                    <button type="submit" class="pure-menu-link">
+                                        Delete
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </details>
 
                 </div>
 
@@ -195,7 +229,27 @@
                 </div>
 
             </article>
-
+            
+            <!-- Edit dialog -->
+            <dialog id="edit-post-{{ post.post_id }}" class="profile-dialog">
+                <form class="pure-form pure-form-stacked" action="{{ url_for('update_post', post_id=post.post_id) }}" method="POST">
+                
+                    <label for="title-{{ post.post_id }}">
+                        Edit your post
+                    </label>
+                    <p></p>
+                    <textarea id="content-{{ post.post_id }}" name="post" rows="3" required>{{ post.content }}</textarea>
+                
+                    <button type="submit" class="btn btn-primary">
+                        Save Changes
+                    </button>
+                
+                    <button type="button" class="btn" commandfor="edit-post-{{ post.post_id }}" command="close">
+                        Cancel
+                    </button>
+                </form>
+            </dialog>
+            
             {% endfor %}
             {% if page > 1 %}
 
@@ -209,7 +263,7 @@
                 <button class="btn btn-primary">Next</button>
                 </a>
                 {% endif %}
-
+                {% endif %}
         </main>
     </div>
 

@@ -74,20 +74,23 @@ async def feeds():
     user = await auth0.get_user(store_options)
     # Whatever logic we use to personalize feed to user goes here
     posts = get_posts_with_usernames()
-    if user:
-        userid = get_user_by_auth0(user["sub"])
-        for post in posts:
-            post["liked"] = has_liked(userid, post["post_id"])
-    else:
-        for post in posts:
-            post["liked"] = False
-    page = request.args.get('page', 1, type=int)
-    per_page = 5
-    start = (page - 1) * per_page
-    end = start + per_page
-    total_pages = (len(posts) + per_page - 1) // per_page
-    posts_on_page = posts[start:end]
-    return render_template("feeds.html", posts=posts_on_page, total_pages = total_pages, page=page)
+    if posts:
+        if user:
+            userid = get_user_by_auth0(user["sub"])
+            for post in posts:
+                post["liked"] = has_liked(userid, post["post_id"])
+        else:
+            for post in posts:
+                post["liked"] = False
+
+        page = request.args.get('page', 1, type=int)
+        per_page = 5
+        start = (page - 1) * per_page
+        end = start + per_page
+        total_pages = (len(posts) + per_page - 1) // per_page
+        posts_on_page = posts[start:end]
+        return render_template("feeds.html", posts=posts_on_page, total_pages = total_pages, page=page)
+    return render_template("feeds.html", posts=posts)
 
 
 @app.route('/search', methods=["POST", "GET"])
@@ -104,14 +107,15 @@ async def search():
     print("search results")
     print (search_results)
     search_type = search_term.startswith('@')
-    page = request.args.get('page', 1, type=int)
-    per_page = 5
-    start = (page - 1) * per_page
-    end = start + per_page
-    total_pages = (len(search_results) + per_page - 1) // per_page
-    results_on_page = search_results[start:end]
-    
-    return render_template("search.html", search_results=results_on_page, profile=search_type, search_term=search_term, total_pages = total_pages, page=page)
+    if search_results:
+        page = request.args.get('page', 1, type=int)
+        per_page = 5
+        start = (page - 1) * per_page
+        end = start + per_page
+        total_pages = (len(search_results) + per_page - 1) // per_page
+        results_on_page = search_results[start:end]
+        return render_template("search.html", search_results=results_on_page, profile=search_type, search_term=search_term, total_pages = total_pages, page=page,pagination=True)
+    return render_template("search.html", search_results=search_results, profile=search_type, search_term=search_term)
 
 # default profile call routes to current auth0 users profile
 @app.route("/profile")
@@ -156,15 +160,23 @@ async def user_profile(username):
             post["liked"] = False
     following_users = get_following(user["id"])
     followers = get_followers(user["id"])
-
-    page = request.args.get('page', 1, type=int)
-    per_page = 5
-    start = (page - 1) * per_page
-    end = start + per_page
-    total_pages = (len(posts) + per_page - 1) // per_page
-    posts_on_page = posts[start:end]
-    
-    return render_template("profile.html", user=user, is_owner=is_owner, following=following, following_users=following_users, followers=followers, posts=posts_on_page, total_pages = total_pages, page=page)
+    if posts:
+        if user:
+            userid = get_user_by_auth0(current_user["sub"])
+            for post in posts:
+                post["liked"] = has_liked(userid, post["post_id"])
+        else:
+            for post in posts:
+                post["liked"] = False
+        
+        page = request.args.get('page', 1, type=int)
+        per_page = 5
+        start = (page - 1) * per_page
+        end = start + per_page
+        total_pages = (len(posts) + per_page - 1) // per_page
+        posts_on_page = posts[start:end]
+        return render_template("profile.html", user=user, is_owner=is_owner, following=following, following_users=following_users, followers=followers, posts=posts_on_page, total_pages = total_pages, page=page)
+    return render_template("profile.html", user=user, is_owner=is_owner, following=following, following_users=following_users, followers=followers, posts=posts)
 
 @app.route("/profile/edit", methods=["POST"])
 async def update_profile():
@@ -197,6 +209,7 @@ async def update_profile():
 
     return redirect("/profile")
 
+
 # trying with just jpeg for now for simplicity
 @app.route("/pfp/<int:userid>")
 def pfp(userid):
@@ -225,13 +238,15 @@ async def post_page(post_id):
     if auth_user:
         userid = get_user_by_auth0(auth_user["sub"])
         liked = has_liked(userid, post_id)
-    page = request.args.get('page', 1, type=int)
-    per_page = 5
-    start = (page - 1) * per_page
-    end = start + per_page
-    total_pages = (len(comments) + per_page - 1) // per_page
-    comments_on_page = comments[start:end]
-    return render_template("post.html", post=post, comments=comments_on_page, liked=liked, total_pages = total_pages, page=page, post_id=post_id)
+    if comments:
+        page = request.args.get('page', 1, type=int)
+        per_page = 5
+        start = (page - 1) * per_page
+        end = start + per_page
+        total_pages = (len(comments) + per_page - 1) // per_page
+        comments_on_page = comments[start:end]
+        return render_template("post.html", post=post, comments=comments_on_page, liked=liked, total_pages = total_pages, page=page, post_id=post_id)
+    return render_template("post.html", post=post, comments=comments, liked=liked)
 
 @app.route("/post/<int:post_id>/edit", methods=["POST"])
 async def update_post(post_id):
@@ -255,24 +270,44 @@ async def update_post(post_id):
         abort(403)
 
     # Get form data
-    title = request.form.get("title", "").strip()
-    content = request.form.get("post", "").strip()
-
-    if not title or not content:
-        flash("Title and post content are required.")
-        return redirect(url_for("feeds"))
+    post = request.form.get("post", "").strip()
 
     # Moderate updated content
-    approved_title = moderate_post(title)
-    approved_content = moderate_post(content)
+    approved_post = moderate_post(post)
 
-    if approved_title is True and approved_content is True:
-        edit_post(post_id, title, content)
+    if approved_post is True:
+        edit_post(post_id, post)
         flash("Post updated successfully!")
     else:
         flash("Your changes could not be approved.")
 
-    return redirect(url_for("feeds"))
+    return redirect("/profile")
+
+@app.route("/post/<int:post_id>/delete", methods=["POST"])
+async def delete_post(post_id):
+    auth0 = init_auth0()
+    store_options = {"request": request}
+    user = await auth0.get_user(store_options)
+
+    if not user:
+        return redirect(url_for("login"))
+
+    user_id = get_user_by_auth0(user["sub"])
+
+    # Get the specific post
+    existing_post = get_post(post_id)
+
+    if not existing_post:
+        abort(404)
+
+    # Verify post ownership
+    if existing_post["user_id"] != user_id:
+        abort(403)
+
+    delete_post_db(user_id, post_id)
+    flash("Post deleted successfully!.")
+    return redirect("/profile")
+
 
 @app.route("/post", methods=['POST'])
 async def submit_post():
@@ -286,20 +321,22 @@ async def submit_post():
     user_id = get_user_by_auth0(user["sub"])
 
     # get form data
+    # title = request.form.get("title")
     post = request.form.get("post")
 
     if not post:
-        flash("Post content is required.")
+        flash("Content is required to make a post.")
         return redirect(url_for("feeds"))
 
     # moderate both title and content
+    # approved_title = moderate_post(title)
     approved_post = moderate_post(post)
     
-    if approved_post:
+    if approved_post is True:
         create_post(user_id, post)
         flash("Post created successfully!")
     elif approved_post is False:
-        flash("Your post was rejected! Try being more positive!")
+        flash("Your post was rejected!")
     else:
         flash("Your post was not successful")
         
