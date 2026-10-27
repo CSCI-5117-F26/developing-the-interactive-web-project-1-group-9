@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+
+<div class="page profile" data-view="owner">
+
+
+
+    <div class="pure-g">
+
+        <!-- LEFT -->
+        <aside class="pure-u-1 pure-u-md-1-4 sidebar">
+
+            <div class="profile-info">
+                <div class="avatar">
+                    <img src="{{user.pfp}}" alt="John Doe">
+                </div>
+
+                <div class="profile-details">
+                    <h1 class="name">{{ user.nickname }}</h1>
+                    <p class="handle">@{{ user.username }}</p>
+
+                    <div class="profile-bio">
+                        <h4>Bio</h4>
+                        <p>{{user.bio}}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-stats">
+                <!-- Button and Dialog to show following -->
+                <button command="show-modal" commandfor="user-following" class="btn btn-block stat">
+                    <span>Following</span>
+                    <strong> {{ user.following_count }}</strong>
+                </button>
+
+                <dialog id="user-following" class="profile-dialog">
+                    <h3>Following</h3>
+                    {% if following_users %}
+                    <ul>
+                        {% for following_user in following_users %}
+                        <li>
+                            <a href="/profile/{{ following_user[0] }}">{{ following_user[1] }} @{{ following_user[0]
+                                }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>Not following anyone</p>
+                    {% endif %}
+                    <button commandfor="user-following" command="close">
+                        Close
+                    </button>
+                </dialog>
+
+                <!-- Button and Dialog to show followers -->
+                <button command="show-modal" commandfor="user-followers" class="btn btn-block stat">
+                    <span>Followers</span>
+                    <strong> {{ user.follower_count }}</strong>
+                </button>
+
+                <dialog id="user-followers" class="profile-dialog">
+                    <h3>Followers</h3>
+                    {% if followers %}
+                    <ul>
+                        {% for follower in followers %}
+                        <li>
+                            <a href="/profile/{{ follower[0] }}">{{ follower[1] }} @{{ follower[0] }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>No followers</p>
+                    {% endif %}
+                    <button commandfor="user-followers" command="close">
+                        Close
+                    </button>
+                </dialog>
+
+            </div>
+            <p></p>
+
+            <div class="profile-stats">
+                {% if is_owner %}
+                <button command="show-modal" commandfor="edit-profile" class="btn btn-block" data-show="owner">
+                    Edit Profile
+                </button>
+
+                <!-- Dialog to show edit profile -->
+                <dialog id="edit-profile" class="profile-dialog">
+                    <form action="/profile/edit" method="POST" enctype="multipart/form-data">
+                        <label>Nickname</label>
+                        <input type="text" name="nickname" maxlength="10">
+                        <br>
+                        <label>Bio</label>
+                        <textarea name="bio"></textarea>
+                        <br>
+                        <label>Profile Picture</label>
+                        <input type="file" name="profile_picture" accept="image">
+                        <br>
+                        <label>Profile Banner</label>
+                        <input type="file" name="profile_banner" accept="image">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="button" class="btn" commandfor="edit-profile" command="close">Close</button>
+                    </form>
+                </dialog>
+                {% endif %}
+
+                {% if not is_owner %}
+                {% if following %}
+                <form action="/unfollow/{{ user.username }}" method="POST">
+                    <button type="submit" class="btn btn-block">
+                        Unfollow
+                    </button>
+                </form>
+                {% else %}
+                <form action="/follow/{{ user.username }}" method="POST">
+                    <button type="submit" class="btn btn-primary btn-block">
+                        Follow
+                    </button>
+                </form>
+                {% endif %}
+                {% endif %}
+
+                <a href="/signin" class="btn btn-block" data-show="guest">
+                    Log in to follow
+                </a>
+
+                <p></p>
+
+                {% if is_owner %} <!-- only really wanna show this logout button to owner -->
+                <a href="/logout" class="btn btn-block">
+                    Log out
+                </a>
+                {% endif %}
+            </div>
+
+
+
+        </aside>
+
+        <!-- RIGHT -->
+        <main class="pure-u-1 pure-u-md-3-4">
+            <div class="banner">
+                <img src="{{user.banner}}" alt="John Doe">
+            </div>
+
+            <hr>
+            <p> My Posts </p>
+            <hr>
+
+            <!-- show message posting feedback -->
+            {% for message in get_flashed_messages() %}
+            <div class="flash-alert" role="alert">
+                {{ message }}
+            
+                <button type="button" class="flash-alert-close" onclick="this.parentElement.remove()" aria-label="Close">
+                    &times;
+                </button>
+            </div>
+            {% endfor %}
+
+            {% if posts == None %}
+            <h3> No Posts</h3>
+            {% else %}
+            {% for post in posts %}
+
+            <article class="card post">
+
+                <!-- Author -->
+                <div class="post-header">
+
+                    <div class="post-author">
+                        <img src={{post.pfp}} alt="John Doe" class="post-avatar">
+                        <div>
+                            <strong>{{ user.nickname }}</strong>
+                            <time>{{ post.time_created }}</time>
+                        </div>
+
+                    </div>
+            
+                    {% if is_owner %}
+                    <!-- Edit dropdown -->
+                    <details class="dropdown">
+                        <summary class="btn">•••</summary>
+            
+                        <ul class="pure-menu-list">
+                            <li class="pure-menu-item">
+                                <button type="button" class="pure-menu-link" commandfor="edit-post-{{ post.post_id }}"
+                                    command="show-modal">
+                                    Edit
+                                </button>
+                            </li>
+                            <li class="pure-menu-item">
+                                <form action="{{ url_for('delete_post', post_id=post.post_id) }}" method="POST">
+                                    <button type="submit" class="pure-menu-link">
+                                        Delete
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </details>
+                    {% endif %}
+
+                </div>
+
+                <!-- Post content -->
+                <p class="post-body">
+                    {{ post.content }}
+                </p>
+
+
+                <!-- Interactions -->
+                <div class="post-actions">
+                    {% if post.liked %}
+                    <form action="/unlike/{{ post.post_id }}" method="POST">
+                        <button type="submit" class="post-action">🚫👍 {{ post.likes }} Happiness</button>
+                    </form>
+                    {% else %}
+                    <form action="/like/{{ post.post_id }}" method="POST">
+                        <button type="submit" class="post-action">👍 {{ post.likes }} Happiness</button>
+                    </form>
+                    {% endif %}
+
+                    <a class="post-action" href="{{ url_for('post_page', post_id=post.post_id) }}">
+                        {{post.comment_count}} Comments
+                    </a>
+
+                </div>
+
+            </article>
+            
+            <!-- Edit dialog -->
+            <dialog id="edit-post-{{ post.post_id }}" class="profile-dialog">
+                <form class="pure-form pure-form-stacked" action="{{ url_for('update_post', post_id=post.post_id) }}" method="POST">
+                
+                    <label for="title-{{ post.post_id }}">
+                        Edit your post
+                    </label>
+                    <p></p>
+                    <textarea id="content-{{ post.post_id }}" name="post" rows="3" required>{{ post.content }}</textarea>
+                
+                    <button type="submit" class="btn btn-primary">
+                        Save Changes
+                    </button>
+                
+                    <button type="button" class="btn" commandfor="edit-post-{{ post.post_id }}" command="close">
+                        Cancel
+                    </button>
+                </form>
+            </dialog>
+            
+            {% endfor %}
+            {% if page is defined and page is not none %}
+              {% if page > 1 %}
+
+              <a href="{{url_for('user_profile', username=user.username, page=page-1)}}">
+                  <button class="btn btn-primary">Previous</button>
+              </a>
+              {% endif %}
+              <span>Page {{page}} of {{total_pages}}</span>
+
+              {% if page < total_pages %} <a href="{{url_for('user_profile', username=user.username, page=page + 1)}}">
+                  <button class="btn btn-primary">Next</button>
+                  </a>
+                  {% endif %}
+                  {% endif %}
+              {% endif %}
+        </main>
+    </div>
+
+    <script>
+        // change button depending on viewing status
+        document.querySelectorAll('[data-set-view]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelector('.profile').dataset.view = btn.dataset.setView;
+                document.querySelectorAll('[data-set-view]').forEach(b =>
+                    b.setAttribute('aria-pressed', b === btn));
+            });
+        });
+    </script>
+
+</div>
+
+{% endblock %}

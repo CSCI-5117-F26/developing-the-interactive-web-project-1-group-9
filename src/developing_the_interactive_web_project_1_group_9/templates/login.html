@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sunshine</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.1.0/build/pure-min.css"
+        integrity="sha384-kj0X2NG2KHBie8Tq8fH1kxnyWM9XsXQpq7XdwbKmFKjwwaXGKBlB2Klu3VOltSFx" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.1.0/build/grids-responsive-min.css" />
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
+
+</head>
+
+<body>
+
+    <main class="page auth-page">
+        <div class="auth-container">
+    
+            <div class="auth-header">
+                <h1>Sunshine</h1>
+            </div>
+
+            <p style="text-align: center;">
+                A cozy little corner of the internet where positivity is encouraged and kindness comes naturally.
+            </p>
+            
+            <form action="/signin">
+                <button type="submit" class="btn btn-primary btn-block">
+                    Sign in
+                </button>
+            </form>
+            
+            <fieldset class="fieldset-divider">
+                <legend>or</legend>
+            </fieldset>
+            
+            <a href="/feeds" class="btn btn-block">
+                Continue as Guest
+            </a>
+    
+        </div>
+    </main>
+
+</body>
+
+</html>
+
+
+
+
+
+

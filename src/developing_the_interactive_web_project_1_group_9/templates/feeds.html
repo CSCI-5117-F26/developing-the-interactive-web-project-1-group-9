@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Feed{% endblock %}
+
+{% block content %}
+
+<div class="page feed">
+
+    <!-- Header -->
+
+    <!-- Feed -->
+    <main>
+
+        <!-- show message posting feedback -->
+        {% for message in get_flashed_messages() %}
+        <div class="flash-alert" role="alert">
+            {{ message }}
+
+            <button type="button" class="flash-alert-close" onclick="this.parentElement.remove()" aria-label="Close">
+                &times;
+            </button>
+        </div>
+        {% endfor %}
+
+        <!-- Create Post -->
+        <section class="card">
+            <form class="pure-form pure-form-stacked" action="/post" method="POST">
+
+                <label for="post">Share some positivity ☀️</label>
+                <p></p>
+
+                <textarea id="post" name="post" rows="3" placeholder="What's making you happy today?" required></textarea>
+
+                <button type="submit" class="btn btn-primary">
+                    Post
+                </button>
+
+            </form>
+        </section>
+        <!-- Recent Posts -->
+        <section>
+
+            <h3>{{ filter_type|capitalize }} Posts</h3>
+            <details class="dropdown">
+                <summary class="btn btn-filter">Filter</summary>
+                <ul class="pure-menu-list">
+                  <li class="pure-menu-item"> 
+                      <a href="{{ url_for('feeds', filter='recent') }}" class="pure-menu-link">Recent</a> 
+                  </li> 
+                  <li class="pure-menu-item"> 
+                      <a href="{{ url_for('feeds', filter='happiness') }}" class="pure-menu-link">Happiness</a> 
+                  </li> 
+                  <li class="pure-menu-item"> 
+                      <a href="{{ url_for('feeds', filter='following') }}" class="pure-menu-link">Following</a> 
+                  </li>
+                </ul>
+            </details>
+            {% if posts == None %}
+            <h3> No Recent Posts</h3>
+        {% else %}
+            {% for post in posts %}
+            <article class="card post">
+
+                <!-- Author -->
+                <div class="post-header">
+
+                    <div class="post-author">
+
+                        <a href="{{ url_for('user_profile', username=post.username) }}">
+                            <img src={{post.pfp}} alt="John Doe" class="post-avatar">
+                        </a>
+
+                        <div>
+                            <strong>{{ post.nickname }}</strong>
+                            <time datetime="2026-10-17">{{post.time_created}}</time>
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+                <!-- Post content -->
+                <p class="post-body">
+                    {{ post.content }}
+                </p>
+
+
+                <!-- Interactions -->
+                <div class="post-actions">
+
+                    {% if post.liked %}
+                    <form action="/unlike/{{ post.post_id }}" method="POST">
+                        <button type="submit" class="post-action">🚫👍 {{ post.likes }} Happiness</button>
+                    </form>
+                    {% else %}
+                    <form action="/like/{{ post.post_id }}" method="POST">
+                        <button type="submit" class="post-action">👍 {{ post.likes }} Happiness</button>
+                    </form>
+                    {% endif %}
+
+                    <a class="post-action" href="{{ url_for('post_page', post_id=post.post_id) }}">
+                        {{post.comment_count}} Comments
+                    </a>
+
+                </div>
+
+            </article>
+
+            {% endfor %}
+            {% if page > 1 %}
+
+            <a href="{{url_for('feeds', page=page-1, filter=filter_type)}}">
+                <button class="btn btn-primary">Previous</button>
+            </a>
+            {% endif %}
+            <span>Page {{page}} of {{total_pages}}</span>
+
+            {% if page < total_pages %} <a href="{{url_for('feeds', page=page + 1, filter=filter_type)}}">
+                <button class="btn btn-primary">Next</button>
+                </a>
+                {% endif %}
+        {% endif %}
+
+        </section>
+
+
+
+    </main>
+
+
+</div>
+
+
+
+{% endblock %}

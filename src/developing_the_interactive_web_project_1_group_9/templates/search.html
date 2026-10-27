@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Search{% endblock %}
+
+{% block content %}
+
+<div class="page feed">
+
+
+    <!-- Body -->
+    <main>
+        {% if search_results | length == 0 %}
+        <p>Oh no! There were no results found! Maybe try a searching something else?</p>
+        {% elif profile %}
+        <!-- Render list of found profiles -->
+        <div class="pure-menu">
+            <!-- Make link to profile for each profile -->
+            <span class="pure-menu-heading">Profiles</span>
+            <ul class="pure-menu-list">
+                {% for user_id, username, bio in search_results %}
+                <li class="pure-menu-item">
+                    <a href={{'/profile/{}'.format(username)}} class="pure-menu-link">
+                        <article class="card post">
+                            <div class="post-header">
+                                <div class="post-author">
+                                    <img src={{'/pfp/{}'.format(user_id)}} " class=" post-avatar">
+                                    <strong>{{ username }}</strong>
+                                </div>
+                            </div>
+                            <p class="post-body">{{ bio }}</p>
+                        </article>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% if page > 1 %}
+            <a href="{{url_for('search',keyword=search_term, page=page-1)}}">
+                <button class="btn btn-primary">Previous</button>
+            </a>
+            {% endif %}
+            <span>Page {{page}} of {{total_pages}}</span>
+
+            {% if page < total_pages %} <a href="{{url_for('search',keyword=search_term,page=page + 1)}}">
+                <button class="btn btn-primary">Next</button>
+                </a>
+                {% endif %}
+        </div>
+        {% else %}
+        <!-- Render list of posts found, yoinked from Ali's feeds branch -->
+        <section>
+
+            <h3>Posts about {{ search_term }}</h3>
+            {% for post in search_results %} <!-- Changed posts to post, rest should be the same in final site-->
+            <article class="card post">
+
+                <!-- Author -->
+                <div class="post-header">
+
+                    <div class="post-author">
+
+                        <a href="{{ url_for('user_profile', username=post.username) }}">
+                          <img src="{{post.pfp}}" alt="Avatar" class="post-avatar">
+                        </a>
+
+                        <div>
+                            <strong>{{ post.nickname }}</strong>
+                            <time datetime="2026-10-17">{{post.time_created}}</time>
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+                <!-- Post content -->
+                <p class="post-body">
+                    {{ post.content }}
+                </p>
+
+
+                <!-- Interactions -->
+                <div class="post-actions">
+
+                  {% if post.liked %}
+                  <form action="/unlike/{{ post.post_id }}" method="POST">
+                      <button type="submit" class="post-action">🚫👍 {{ post.likes }} Happiness</button>
+                  </form>
+                  {% else %}
+                  <form action="/like/{{ post.post_id }}" method="POST">
+                      <button type="submit" class="post-action">👍 {{ post.likes }} Happiness</button>
+                  </form>
+                  {% endif %}
+
+                  <a class="post-action" href="{{ url_for('post_page', post_id=post.post_id) }}">
+                      {{post.comment_count}} Comments
+                  </a>
+
+              </div>
+
+            </article>
+
+            {% endfor %}
+        </section>
+        {% if page is defined and page is not none %}
+          {% if page > 1 %}
+          <a href="{{url_for('search',keyword=search_term, page=page-1)}}">
+              <button class="btn btn-primary">Previous</button>
+          </a>
+          {% endif %}
+          <span>Page {{page}} of {{total_pages}}</span>
+
+          {% if page < total_pages %} <a href="{{url_for('search',keyword=search_term,page=page + 1)}}">
+              <button class="btn btn-primary">Next</button>
+              </a>
+          {% endif %}
+        {% endif %}
+        {% endif %}
+
+    </main>
+</div>
+
+{% endblock %}
