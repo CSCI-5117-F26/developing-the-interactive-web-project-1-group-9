@@ -62,7 +62,7 @@ In this space please either provide images (around 4) showing your prototypes, O
 Please do not document required libraries. or libraries that are mentioned in the product requirements**
 
 * Library or service name: description of use
-* ...
+* google-genai: used to determine if the text is safe to post.
 
 **If there's anything else you would like to disclose about how your project
 relied on external code, expertise, or anything else, please disclose that
