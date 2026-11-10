@@ -4,14 +4,17 @@ CSCI 5117, Fall 2026, [assignment description](https://canvas.umn.edu/courses/57
 
 ## App Info:
 
-* Team Name: TODO
-* App Name: TODO
-* App Link: <https://TODO.com/>
+* Team Name: The Chefs
+* App Name: Sunshine
+* App Link: https://developing-the-interactive-web-project-1-4dhi.onrender.com/feeds
 
 ### Students
 
 * First Last, x500@umn.edu
-* ...
+* Adam Meziou, mezio004@umn.edu
+* Ali Imihy, imihy001@umn.edu
+* Gideon Okoroafor, okoro062@umn.edu
+* Ayaan Mallick, malli143@umn.edu
 
 
 ## Key Features
@@ -19,7 +22,9 @@ CSCI 5117, Fall 2026, [assignment description](https://canvas.umn.edu/courses/57
 **Describe the most challenging features you implemented
 (one sentence per bullet, maximum 4 bullets):**
 
-* ...
+* Auth0 was a lot of work as the documentation is not great. Flask-wtf is a lot of busy work to convert all your
+* post requests to flask-forms if you weren't using them from the beginining.
+* A lot of individual data to keep track of in database, including images and auth0 info
 
 ## Testing Notes
 
@@ -35,10 +40,34 @@ along with a very brief caption:**
 
 ![](https://media.giphy.com/media/o0vwzuFwCGAFO/giphy.gif)
 
+The following screenshot depicts 4 mock up images of different pages on our planned web app.
+
+Login
+
+![Alt text](/screenshots/login.png)
+
+Feed
+
+![Alt text](/screenshots/feed.png)
+
+Post
+
+![Alt text](/screenshots/post.png)
+
+Profile
+
+![Alt text](/screenshots/profile.png)
+
+
 
 ## Mock-up 
 
 There are a few tools for mock-ups. Paper prototypes (low-tech, but effective and cheap), Digital picture edition software (gimp / photoshop / etc.), or dedicated tools like moqups.com (I'm calling out moqups here in particular since it seems to strike the best balance between "easy-to-use" and "wants your money" -- the free teir isn't perfect, but it should be sufficient for our needs with a little "creative layout" to get around the page-limit)
+
+![Alt text](/screenshots/mockup_mainfeed.png)
+![Alt text](/screenshots/mockup_profile.png)
+![Alt text](/screenshots/mockup_login.png)
+![Alt text](/screenshots/mockup_postscreen.png)
 
 In this space please either provide images (around 4) showing your prototypes, OR, a link to an online hosted mock-up tool like moqups.com
 
@@ -53,10 +82,14 @@ In this space please either provide images (around 4) showing your prototypes, O
 Please do not document required libraries. or libraries that are mentioned in the product requirements**
 
 * Library or service name: description of use
-* ...
+* google-genai: used to determine if the text is safe to post
+* auth0: The official library for auth0 authentication
+* flask-wtf: cross site scripting protection
 
 **If there's anything else you would like to disclose about how your project
 relied on external code, expertise, or anything else, please disclose that
 here:**
 
 ...
+## Credits
+*(https://purecss.io) licensed under the [Yahoo BSD License](https://github.com). Copyright (c) 2013, Yahoo! Inc.
